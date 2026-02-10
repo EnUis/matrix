@@ -1,0 +1,146 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #020617, #000);
+  color: #e5e7eb;
+  font-family: 'Orbitron', sans-serif;
+  min-height: 100vh;
+}
+
+.bg-glow {
+  position: fixed;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: #f97316;
+  filter: blur(200px);
+  opacity: 0.15;
+  z-index: -1;
+}
+
+.container {
+  max-width: 900px;
+  margin: 60px auto;
+  padding: 0 20px;
+}
+
+/* Site header and logo styles */
+.site-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+}
+.site-header .header-inner {
+  max-width: 900px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.site-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+.site-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #ffffff;
+}
+
+@media (max-width: 480px) {
+  .site-logo { width: 40px; height: 40px; }
+  .site-title { font-size: 15px; }
+}
+
+h1 {
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+.status {
+  text-align: center;
+  color: #94a3b8;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: linear-gradient(180deg, #020617, #020617cc);
+  border-radius: 14px;
+  box-shadow: 0 0 40px #000;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #020617;
+}
+
+th {
+  padding: 16px;
+  text-align: left;
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+tbody tr {
+  transition: all 0.2s ease;
+}
+
+tbody tr:hover {
+  background: #020617aa;
+  transform: scale(1.01);
+}
+
+td {
+  padding: 16px;
+  font-size: 15px;
+}
+
+.rank {
+  font-weight: 800;
+}
+
+.gold { color: #facc15; }
+.silver { color: #e5e7eb; }
+.bronze { color: #fb923c; }
+
+.player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid #f97316;
+}
+
+.level {
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #020617;
+  border: 1px solid #334155;
+  text-align: center;
+  width: fit-content;
+}
+
+.elo {
+  font-weight: 700;
+  color: #f97316;
+}
