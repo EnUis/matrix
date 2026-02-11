@@ -3,13 +3,17 @@ const axios = require("axios");
 const players = require("./players");
 const path = require("path");
 
-const app = express(); // ← Create Express app
+const app = express();
 
-// Serve frontend files
+// Serve frontend files from "public" folder
 app.use(express.static(path.join(__dirname, "public")));
 
 // Serve index.html at root
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
+
+// Faceit API setup
+const FACEIT_API = "https://open.faceit.com/data/v4";
+const API_KEY = "a68f9584-e988-4c48-a164-5fe3a2796bc2"; // your real key here
 
 // Leaderboard API route
 app.get("/leaderboard", async (req, res) => {
@@ -42,5 +46,6 @@ app.get("/leaderboard", async (req, res) => {
   res.json(results);
 });
 
+// Dynamic port for Render or fallback to 3000
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
