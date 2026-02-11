@@ -21,6 +21,8 @@ module.exports = [
   "EndritHs",
   "Sekkimmv",
   "artonn2k",
-  "ScUzA",
-  "BiG-Daddy132"
+  "ScUzA-",
+  "BiG-Daddy132",
+  "s1lentyyy"
 ];
+
