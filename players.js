@@ -35,8 +35,10 @@ module.exports = [
   "L3ON-1",
   "shkelzeraa",
   "Ago0N",
-  "sickdellta"
+  "sickdellta",
+  "ZinnoThaKiDo"
 ];
+
 
 
 
