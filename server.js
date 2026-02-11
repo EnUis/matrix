@@ -5,57 +5,22 @@ const players = require("./players");
 
 const app = express();
 app.use(cors());
-app.use(express.static("frontend"));
+app.use(express.static("frontend")); // serve frontend files
 
 const FACEIT_API = "https://open.faceit.com/data/v4";
 const API_KEY = "a68f9584-e988-4c48-a164-5fe3a2796bc2";
 
-async function getPlayer(nickname) {
-  const encoded = encodeURIComponent(nickname);
-
-  const res = await axios.get(
-    `${FACEIT_API}/players?nickname=${encoded}`,
-    {
-      headers: { Authorization: `Bearer ${API_KEY}` }
-    }
-  );
-
-  const p = res.data;
-  const cs2 = p.games?.cs2;
-
-  if (!cs2) {
-    throw new Error(`${nickname} does not have CS2`);
-  }
-
-  return {
-    nickname: p.nickname,
-    avatar: p.avatar || "https://via.placeholder.com/36",
-    elo: cs2.faceit_elo,
-    level: cs2.skill_level
-  };
-}
-
+// API logic here...
 app.get("/leaderboard", async (req, res) => {
-  const results = [];
-
-  for (const name of players) {
-    try {
-      const player = await getPlayer(name);
-      results.push(player);
-    } catch (err) {
-      console.warn("Skipping:", name, "-", err.message);
-    }
-  }
-
-  results.sort((a, b) => b.elo - a.elo);
-  res.json(results);
+  // fetch and return leaderboard
 });
 
-app.get("/", (req, res)=>{
-  res.send("Matrix Leaderboard API is running")
+// Serve index.html at root
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/frontend/index.html");
 });
 
-app.listen(3000, () =>
-  console.log("✅ Backend running on http://localhost:3000")
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () =>
+  console.log(`✅ Backend running on port ${PORT}`)
 );
-
