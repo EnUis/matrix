@@ -11,7 +11,7 @@ function medalClass(i) {
 async function load() {
   try {
     status.textContent = "Loading leaderboard...";
-    const res = await fetch("http://127.0.0.1:3000/leaderboard");
+    const res = await fetch("https://matrix4.onrender.com/leaderboard");
     const data = await res.json();
 
     board.innerHTML = "";
@@ -47,3 +47,4 @@ async function load() {
 
 load();
 setInterval(load, 30000);
+
