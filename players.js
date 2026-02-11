@@ -29,7 +29,14 @@ module.exports = [
   "es133",
   "Sm00th11",
   "gesyy-",
-  "valmir33"
+  "valmir33",
+  "alb1onk",
+  "Bloddy23",
+  "L3ON-1",
+  "shkelzeraa",
+  "Ago0N",
+  "sickdellta"
 ];
+
 
 
