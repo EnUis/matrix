@@ -8,18 +8,53 @@ function medalClass(i) {
   return "";
 }
 
-async function load() {
-  try {
-    status.textContent = "Loading leaderboard...";
-    const res = await fetch("/leaderboard");
-    const data = await res.json();
+<script>
+function loadLeaderboard() {
+  var status = document.getElementById("status");
+  var board = document.getElementById("leaderboard");
 
-    board.innerHTML = "";
+  status.textContent = "Loading leaderboard...";
 
-    if (!data.length) {
-      status.textContent = "No players found.";
-      return;
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", "/leaderboard", true);
+
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        var data = JSON.parse(xhr.responseText);
+
+        board.innerHTML = "";
+
+        if (!data.length) {
+          status.textContent = "No players found.";
+          return;
+        }
+
+        status.textContent = "";
+
+        var table = "<table border='1'><tr><th>Avatar</th><th>Nickname</th><th>ELO</th><th>Level</th></tr>";
+        data.forEach(player => {
+          table += `<tr>
+            <td><img src="${player.avatar}" width="36"></td>
+            <td>${player.nickname}</td>
+            <td>${player.elo}</td>
+            <td>${player.level}</td>
+          </tr>`;
+        });
+        table += "</table>";
+
+        board.innerHTML = table;
+      } else {
+        status.textContent = "Failed to load leaderboard.";
+      }
     }
+  };
+
+  xhr.send();
+}
+
+window.onload = loadLeaderboard;
+</script>
 
     status.textContent = "";
 
@@ -47,5 +82,6 @@ async function load() {
 
 load();
 setInterval(load, 30000);
+
 
 
