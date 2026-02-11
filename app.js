@@ -8,11 +8,7 @@ function medalClass(i) {
   return "";
 }
 
-<script>
 function loadLeaderboard() {
-  var status = document.getElementById("status");
-  var board = document.getElementById("leaderboard");
-
   status.textContent = "Loading leaderboard...";
 
   var xhr = new XMLHttpRequest();
@@ -32,18 +28,23 @@ function loadLeaderboard() {
 
         status.textContent = "";
 
-        var table = "<table border='1'><tr><th>Avatar</th><th>Nickname</th><th>ELO</th><th>Level</th></tr>";
-        data.forEach(player => {
-          table += `<tr>
-            <td><img src="${player.avatar}" width="36"></td>
-            <td>${player.nickname}</td>
-            <td>${player.elo}</td>
-            <td>${player.level}</td>
-          </tr>`;
+        data.forEach((p, i) => {
+          board.innerHTML += `
+            <tr>
+              <td class="rank ${medalClass(i)}">${i + 1}</td>
+              <td>
+                <div class="player">
+                  <img src="${p.avatar}" class="avatar">
+                  ${p.nickname}
+                </div>
+              </td>
+              <td>
+                <div class="level">LVL ${p.level}</div>
+              </td>
+              <td class="elo">${p.elo}</td>
+            </tr>
+          `;
         });
-        table += "</table>";
-
-        board.innerHTML = table;
       } else {
         status.textContent = "Failed to load leaderboard.";
       }
@@ -53,35 +54,6 @@ function loadLeaderboard() {
   xhr.send();
 }
 
-window.onload = loadLeaderboard;
-</script>
-
-    status.textContent = "";
-
-    data.forEach((p, i) => {
-      board.innerHTML += `
-        <tr>
-          <td class="rank ${medalClass(i)}">${i + 1}</td>
-          <td>
-            <div class="player">
-              <img src="${p.avatar}" class="avatar">
-              ${p.nickname}
-            </div>
-          </td>
-          <td>
-            <div class="level">LVL ${p.level}</div>
-          </td>
-          <td class="elo">${p.elo}</td>
-        </tr>
-      `;
-    });
-  } catch (e) {
-    status.textContent = "Failed to load leaderboard.";
-  }
-}
-
-load();
-setInterval(load, 30000);
-
-
-
+// Load initially and every 30 seconds
+loadLeaderboard();
+setInterval(loadLeaderboard, 30000);
