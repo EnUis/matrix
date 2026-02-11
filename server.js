@@ -5,6 +5,7 @@ const players = require("./players");
 
 const app = express();
 app.use(cors());
+app.use(express.static("frontend"));
 
 const FACEIT_API = "https://open.faceit.com/data/v4";
 const API_KEY = "a68f9584-e988-4c48-a164-5fe3a2796bc2";
@@ -57,3 +58,4 @@ app.get("/", (req, res)=>{
 app.listen(3000, () =>
   console.log("✅ Backend running on http://localhost:3000")
 );
+
