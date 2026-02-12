@@ -12,7 +12,7 @@ module.exports = [
   "rusiJr-",
   "shendirty",
   "DODA187",
-  "VALIZDA-",
+  "ziski",
   "russeu",
   "-NiCi1-",
   "SRBHACKER99",
@@ -40,6 +40,7 @@ module.exports = [
   "Itsbehar",
   "johnnalittee"
 ];
+
 
 
 
