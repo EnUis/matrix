@@ -38,7 +38,9 @@ module.exports = [
   "sickdellta",
   "ZinnoThaKiDo",
   "_B1Ny",
-  "Itsbehar"
+  "Itsbehar",
+  "johnnalittee"
 ];
+
 
 
