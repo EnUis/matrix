@@ -23,12 +23,19 @@ module.exports = [
   "artonn2k",
   "ScUzA-",
   "BiG-Daddy132",
+  "s1lentyyy",
   "el_chapoo_",
   "hasbu11a",
   "es133",
   "Sm00th11",
   "gesyy-",
   "valmir33",
+  "alb1onk",
+  "Bloddy23",
+  "L3ON-1",
+  "shkelzeraa",
+  "Ago0N",
+  "sickdellta",
+  "ZinnoThaKiDo",
   "_B1Ny"
 ];
-
