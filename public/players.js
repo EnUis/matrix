@@ -28,5 +28,7 @@ module.exports = [
   "es133",
   "Sm00th11",
   "gesyy-",
-  "valmir33"
+  "valmir33",
+  "_B1Ny"
 ];
+
