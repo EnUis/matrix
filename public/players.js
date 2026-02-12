@@ -8,7 +8,6 @@ module.exports = [
   "Vigzz",
   "drzhivagoo",
   "_Keka",
-  "bJr-",
   "labiii-",
   "rusiJr-",
   "shendirty",
@@ -41,6 +40,7 @@ module.exports = [
   "Itsbehar",
   "johnnalittee"
 ];
+
 
 
 
