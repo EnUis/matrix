@@ -38,8 +38,12 @@ module.exports = [
   "ZinnoThaKiDo",
   "_B1Ny",
   "Itsbehar",
-  "johnnalittee"
+  "johnnalittee",
+  "gunga007",
+  "buggi_",
+  "Lantii05"
 ];
+
 
 
 
