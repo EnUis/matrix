@@ -42,8 +42,10 @@ module.exports = [
   "gunga007",
   "buggi_",
   "Lantii05",
-  "olsyy"
+  "olsyy",
+  "IGNwanted"
 ];
+
 
 
 
