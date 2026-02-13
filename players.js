@@ -41,8 +41,10 @@ module.exports = [
   "johnnalittee",
   "gunga007",
   "buggi_",
-  "Lantii05"
+  "Lantii05",
+  "onlsyy"
 ];
+
 
 
 
