@@ -43,8 +43,10 @@ module.exports = [
   "buggi_",
   "Lantii05",
   "olsyy",
-  "IGNwanted"
+  "IGNwanted",
+  "PreshevaAK"
 ];
+
 
 
 
