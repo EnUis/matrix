@@ -8,9 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&display=swap" rel="stylesheet">
 
-  <!-- Added styles for top-3 layout (updated: wider cards, align with table width) -->
   <style>
-    /* top-three container: center and match table width */
     .top-three {
       display: flex;
       gap: 16px;
@@ -18,7 +16,7 @@
       justify-content: space-between;
       flex-wrap: nowrap;
       width: 100%;
-      max-width: 980px; /* aligns with main table width */
+      max-width: 980px;
       box-sizing: border-box;
       padding: 0 8px;
     }
@@ -27,7 +25,7 @@
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.06);
       padding: 20px;
-      width: calc((100% - 32px) / 3); /* three equal columns */
+      width: calc((100% - 32px) / 3);
       min-width: 240px;
       text-align: center;
       border-radius: 10px;
@@ -44,11 +42,18 @@
       font-size: 24px;
       color: #ffd700;
     }
+
     .top-card .player {
       font-size: 22px;
       font-weight: 800;
       letter-spacing: 0.6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+      max-width: 100%;
     }
+
     .top-card .meta {
       display: flex;
       gap: 14px;
@@ -56,7 +61,6 @@
       opacity: 0.95;
     }
 
-    /* emphasize best player slightly */
     .top-card:first-child { transform: scale(1.06); }
 
     @media (max-width: 1000px) {
@@ -69,17 +73,41 @@
     }
     @media (max-width:480px){
       .top-card { width: 100%; }
+      .top-card:first-child { transform: none; }
     }
 
-    /* make table sit neatly under top-three */
     .card { margin-top: 8px; }
     .card table thead th { text-transform: uppercase; font-size:12px; }
     .card table tbody td { padding: 10px 8px; }
+
+    /* Avatar */
+    .av {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      flex: 0 0 auto;
+    }
+
+    /* Player cell layout */
+    .playerCell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .playerName {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 320px;
+    }
   </style>
 </head>
 <body>
 
-<!-- Site header: replace frontend/logo.png with your logo file (or update the src) -->
 <header class="site-header" aria-label="Site header">
   <div class="header-inner">
     <img src="logo.png" alt="Site logo" class="site-logo" />
@@ -93,10 +121,7 @@
   <h1>MATRIX LEADERBOARD</h1>
   <p id="status" class="status">Loading...</p>
 
-  <!-- New top-3 horizontal container -->
-  <div id="topThree" class="top-three" aria-hidden="true">
-    <!-- cards will be injected from the small script below when #board rows appear -->
-  </div>
+  <div id="topThree" class="top-three" aria-hidden="true"></div>
 
   <div class="card">
     <table>
@@ -113,87 +138,88 @@
   </div>
 </div>
 
-<script type="module" src="app.js"></script>
+<script type="module">
+  const statusEl = document.getElementById("status");
+  const topThreeEl = document.getElementById("topThree");
+  const boardEl = document.getElementById("board");
 
-<!-- Script: move first 3 rows into topThree once rows are populated -->
-<script>
-  (function(){
-    const board = document.getElementById('board');
-    const topThree = document.getElementById('topThree');
-    if(!board || !topThree) return;
+  function safeAvatar(url){
+    return url && url.trim().length ? url : "https://via.placeholder.com/36";
+  }
 
-    function getNameFromRow(tr){
-      return (tr.children[1]?.textContent || '').trim();
+  function renderTopThree(players){
+    topThreeEl.innerHTML = "";
+    if (players.length < 3) {
+      topThreeEl.setAttribute("aria-hidden", "true");
+      return;
     }
 
-    function createCardFromRow(tr, rankFallback){
-      const cols = tr.children;
-      const rank = cols[0]?.textContent?.trim() || rankFallback;
-      const nameHTML = cols[1]?.innerHTML || '';
-      const level = cols[2]?.textContent?.trim() || '';
-      const elo = cols[3]?.textContent?.trim() || '';
-      const div = document.createElement('div');
-      div.className = 'top-card';
-      div.innerHTML = '<div class="rank">#' + rank + '</div>'
-                    + '<div class="player">' + nameHTML + '</div>'
-                    + '<div class="meta"><span class="level">' + level + '</span><span class="elo">' + elo + '</span></div>';
-      return div;
-    }
+    players.slice(0,3).forEach((p, idx) => {
+      const card = document.createElement("div");
+      card.className = "top-card";
+      card.innerHTML =
+        `<div class="rank">#${idx+1}</div>
+         <div class="player">
+           <img class="av" src="${safeAvatar(p.avatar)}" alt="">
+           <span class="playerName">${p.nickname}</span>
+         </div>
+         <div class="meta">
+           <span class="level">LVL ${p.level}</span>
+           <span class="elo">${p.elo} ELO</span>
+         </div>`;
+      topThreeEl.appendChild(card);
+    });
 
-    function renumber(){
-      Array.from(board.querySelectorAll('tr')).forEach((tr, idx) => {
-        const firstTd = tr.querySelector('td');
-        if(firstTd) firstTd.textContent = idx + 4;
-      });
-    }
+    topThreeEl.setAttribute("aria-hidden", "false");
+  }
 
-    function moveTopThreeIfNeeded(){
-      // if we already have top cards, nothing to move
-      if(topThree.children.length > 0) return false;
+  function renderTable(players){
+    boardEl.innerHTML = "";
 
-      const rows = Array.from(board.querySelectorAll('tr'));
-      if(rows.length < 3) return false;
+    players.slice(3).forEach((p, i) => {
+      const tr = document.createElement("tr");
+      const rank = i + 4;
+      tr.innerHTML = `
+        <td>${rank}</td>
+        <td>
+          <div class="playerCell">
+            <img class="av" src="${safeAvatar(p.avatar)}" alt="">
+            <span class="playerName">${p.nickname}</span>
+          </div>
+        </td>
+        <td>${p.level}</td>
+        <td>${p.elo}</td>
+      `;
+      boardEl.appendChild(tr);
+    });
+  }
 
-      // move first three rows into topThree
-      for(let i=0;i<3;i++){
-        const tr = rows[i];
-        topThree.appendChild(createCardFromRow(tr, i+1));
-        tr.remove();
+  async function loadLeaderboard(){
+    try{
+      statusEl.textContent = "Loading...";
+      const res = await fetch("/leaderboard", { cache: "no-store" });
+      if(!res.ok) throw new Error("Failed: " + res.status);
+
+      const players = await res.json();
+
+      if(!Array.isArray(players) || players.length === 0){
+        statusEl.textContent = "No players yet. Add players in admin panel.";
+        topThreeEl.innerHTML = "";
+        boardEl.innerHTML = "";
+        return;
       }
-      renumber();
-      topThree.setAttribute('aria-hidden','false');
-      return true;
-    }
 
-    function removeDuplicateRowsWhenCardsExist(){
-      if(topThree.children.length === 0) return;
-      const topNames = Array.from(topThree.querySelectorAll('.player')).map(el => el.textContent.trim());
-      let removed = false;
-      Array.from(board.querySelectorAll('tr')).forEach(tr => {
-        const rankText = tr.querySelector('td')?.textContent?.trim();
-        const rankNum = parseInt(rankText, 10);
-        const name = getNameFromRow(tr);
-        if((rankNum && rankNum <= 3) || topNames.includes(name)){
-          tr.remove();
-          removed = true;
-        }
-      });
-      if(removed) renumber();
+      statusEl.textContent = "Live";
+      renderTopThree(players);
+      renderTable(players);
+    }catch(e){
+      statusEl.textContent = "Error loading leaderboard.";
+      console.error(e);
     }
+  }
 
-    function sync(){
-      // try to create top cards if none exist
-      if(!moveTopThreeIfNeeded()){
-        // if cards already exist, ensure table doesn't contain duplicates
-        removeDuplicateRowsWhenCardsExist();
-      }
-    }
-
-    // initial sync and keep observing for changes (refreshes/updates)
-    sync();
-    const obs = new MutationObserver(sync);
-    obs.observe(board, { childList: true, subtree: true });
-  })();
+  loadLeaderboard();
+  setInterval(loadLeaderboard, 60000);
 </script>
 
 </body>
