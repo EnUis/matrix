@@ -53,9 +53,10 @@ module.exports = [
   "SABABUSH2",
   "-nitzz",
   "Bandiiti",
-  "PRONTOO",
+  "PR0NT00",
   "Swastika-"
 ];
+
 
 
 
