@@ -5,451 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MATRIX Leaderboard</title>
 
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&display=swap" rel="stylesheet">
 
-  <style>
-    :root{
-      --bg0:#05060b;
-      --bg1:#080b14;
-      --card: rgba(255,255,255,0.06);
-      --card2: rgba(255,255,255,0.035);
-      --stroke: rgba(255,255,255,0.12);
-      --stroke2: rgba(255,255,255,0.08);
-      --muted: rgba(255,255,255,0.72);
-
-      --accent:#00ff99;
-      --accent2:#00c8ff;
-      --glow: rgba(0,255,153,0.20);
-      --glow2: rgba(0,200,255,0.16);
-
-      --gold:#ffd700;
-      --silver:#cfd6e6;
-      --bronze:#d99a5d;
-
-      --shadow: 0 18px 70px rgba(0,0,0,0.60);
-      --shadow2: 0 10px 40px rgba(0,0,0,0.45);
-    }
-
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      font-family:'Orbitron', sans-serif;
-      color:#fff;
-      background:
-        radial-gradient(900px 520px at 15% -15%, rgba(0,255,153,0.14), transparent 62%),
-        radial-gradient(900px 520px at 85% -15%, rgba(0,200,255,0.12), transparent 62%),
-        radial-gradient(900px 450px at 50% 120%, rgba(255,215,0,0.09), transparent 62%),
-        linear-gradient(180deg, var(--bg1), var(--bg0));
-      overflow-x:hidden;
-    }
-
-    /* esports scanline + noise (subtle) */
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background:
-        repeating-linear-gradient(
-          to bottom,
-          rgba(255,255,255,0.028),
-          rgba(255,255,255,0.028) 1px,
-          transparent 1px,
-          transparent 6px
-        );
-      opacity:0.25;
-      mix-blend-mode:overlay;
-    }
-    body::after{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
-      opacity:0.05;
-    }
-
-    /* HEADER */
-    .site-header{
-      position:sticky;
-      top:0;
-      z-index:20;
-      backdrop-filter: blur(12px);
-      background: rgba(0,0,0,0.40);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    .header-inner{
-      width: min(1200px, 94vw);
-      margin: 0 auto;
-      padding: 14px 0;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 14px;
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-    }
-    .logo{
-      width:46px;height:46px;border-radius:14px;
-      object-fit:cover;
-      background: rgba(255,255,255,0.06);
-      border:1px solid rgba(255,255,255,0.12);
-      box-shadow: 0 0 18px rgba(0,255,153,0.10);
-    }
-    .titleWrap{ min-width:0; }
-    .site-title{
-      font-weight:800;
-      letter-spacing:1px;
-      color: var(--accent);
-      text-shadow: 0 0 18px rgba(0,255,153,0.24);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      line-height:1.1;
-    }
-    .subtitle{
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.8px;
-      text-transform:uppercase;
-      margin-top:2px;
-    }
-
-    .header-actions{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius:999px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.10);
-      color: var(--muted);
-      font-size:12px;
-      user-select:none;
-    }
-
-    .btn{
-      font-family:inherit;
-      font-weight:800;
-      letter-spacing:0.6px;
-      cursor:pointer;
-      padding:10px 12px;
-      color:#fff;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      transition: transform .06s ease, box-shadow .25s ease, border-color .25s ease;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      user-select:none;
-
-      /* angled esports shape */
-      clip-path: polygon(0 0, 92% 0, 100% 35%, 100% 100%, 8% 100%, 0 65%);
-      border-radius: 0; /* clip-path makes it look sharp */
-    }
-    .btn:hover{
-      border-color: rgba(0,255,153,0.45);
-      box-shadow: 0 0 20px var(--glow);
-    }
-    .btn:active{ transform: translateY(1px); }
-    .btn.primary{
-      background: linear-gradient(180deg, rgba(0,255,153,0.20), rgba(0,255,153,0.08));
-      border-color: rgba(0,255,153,0.45);
-    }
-    .btn.ghost:hover{
-      border-color: rgba(0,200,255,0.45);
-      box-shadow: 0 0 20px var(--glow2);
-    }
-
-    /* MAIN */
-    .container{
-      width: min(1200px, 94vw);
-      margin: 26px auto 80px;
-      position:relative;
-      z-index: 1;
-    }
-    .topline{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:14px;
-      flex-wrap:wrap;
-      margin: 18px 0 12px;
-    }
-    h1{
-      margin:0;
-      font-size: 30px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-    .status{
-      margin:0;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    /* CONTROLS */
-    .controls{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:space-between;
-      margin: 10px 0 16px;
-    }
-    .control-left, .control-right{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .input{
-      background: rgba(0,0,0,0.30);
-      border: 1px solid rgba(255,255,255,0.12);
-      color:#fff;
-      padding: 11px 12px;
-      outline:none;
-      width: min(360px, 92vw);
-      font-family:inherit;
-      font-weight:600;
-
-      clip-path: polygon(0 0, 94% 0, 100% 40%, 100% 100%, 6% 100%, 0 60%);
-    }
-    .input:focus{
-      border-color: rgba(0,255,153,0.45);
-      box-shadow: 0 0 0 3px rgba(0,255,153,0.10);
-    }
-    .select{
-      appearance:none;
-      background: rgba(0,0,0,0.30);
-      border: 1px solid rgba(255,255,255,0.12);
-      color:#fff;
-      padding: 11px 12px;
-      outline:none;
-      font-family:inherit;
-      font-weight:800;
-      letter-spacing:0.4px;
-      cursor:pointer;
-
-      clip-path: polygon(0 0, 94% 0, 100% 40%, 100% 100%, 6% 100%, 0 60%);
-    }
-
-    /* PODIUM */
-    .podium{
-      display:grid;
-      grid-template-columns: 1fr 1.12fr 1fr;
-      gap:14px;
-      margin: 8px 0 16px;
-    }
-    @media (max-width: 920px){ .podium{ grid-template-columns: 1fr; } }
-
-    .pod-card{
-      position:relative;
-      padding: 16px;
-      background: linear-gradient(180deg, var(--card), rgba(0,0,0,0.20));
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow: var(--shadow2);
-      overflow:hidden;
-
-      /* esports angle */
-      clip-path: polygon(0 0, 96% 0, 100% 18%, 100% 100%, 4% 100%, 0 82%);
-    }
-
-    .pod-card::before{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background:
-        radial-gradient(620px 240px at 20% 0%, rgba(0,255,153,0.15), transparent 62%),
-        radial-gradient(620px 240px at 80% 0%, rgba(0,200,255,0.12), transparent 62%);
-      opacity:0.9;
-      pointer-events:none;
-    }
-    .pod-card > *{ position:relative; z-index:1; }
-
-    .pod-card.champ{
-      border-color: rgba(255,215,0,0.25);
-      box-shadow: var(--shadow), 0 0 28px rgba(255,215,0,0.12);
-      transform: scale(1.03);
-    }
-    @media (max-width: 920px){ .pod-card.champ{ transform:none; } }
-
-    .pod-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom: 12px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .rankTag{
-      padding:6px 10px;
-      border:1px solid rgba(255,255,255,0.12);
-      background: rgba(0,0,0,0.22);
-      font-weight:800;
-      letter-spacing:1px;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      user-select:none;
-
-      clip-path: polygon(0 0, 92% 0, 100% 45%, 100% 100%, 8% 100%, 0 55%);
-    }
-    .rankTag.gold{ color: var(--gold); border-color: rgba(255,215,0,0.35); }
-    .rankTag.silver{ color: var(--silver); border-color: rgba(207,214,230,0.30); }
-    .rankTag.bronze{ color: var(--bronze); border-color: rgba(217,154,93,0.35); }
-
-    .crown{
-      display:inline-flex;
-      width:18px;height:18px;
-      filter: drop-shadow(0 0 10px rgba(255,215,0,0.25));
-    }
-
-    .pod-player{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-    }
-
-    .ring{
-      width: 58px;height:58px;border-radius:999px;
-      padding:2px;
-      background: conic-gradient(from 90deg, rgba(0,255,153,0.0), rgba(0,255,153,0.75), rgba(0,200,255,0.55), rgba(0,255,153,0.0));
-      box-shadow: 0 0 22px rgba(0,255,153,0.12);
-      flex: 0 0 auto;
-    }
-    .ring.gold{
-      background: conic-gradient(from 90deg, rgba(255,215,0,0.0), rgba(255,215,0,0.75), rgba(0,255,153,0.35), rgba(255,215,0,0.0));
-      box-shadow: 0 0 24px rgba(255,215,0,0.12);
-    }
-    .av{
-      width: 54px;height:54px;border-radius:999px;
-      object-fit:cover;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      display:block;
-    }
-
-    .pname{
-      font-weight:800;
-      letter-spacing:0.6px;
-      font-size:18px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width: 520px;
-    }
-    .pmeta{
-      margin-top:6px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      color: var(--muted);
-      font-size:12px;
-    }
-    .badge{
-      padding:6px 10px;
-      border:1px solid rgba(255,255,255,0.10);
-      background: rgba(255,255,255,0.05);
-      user-select:none;
-
-      clip-path: polygon(0 0, 94% 0, 100% 45%, 100% 100%, 6% 100%, 0 55%);
-    }
-
-    /* TABLE */
-    .table-card{
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(255,255,255,0.035);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-
-      clip-path: polygon(0 0, 98% 0, 100% 12%, 100% 100%, 2% 100%, 0 88%);
-    }
-    table{
-      width:100%;
-      border-collapse:collapse;
-    }
-    thead{
-      background: rgba(0,0,0,0.35);
-    }
-    thead th{
-      font-size:12px;
-      letter-spacing:1px;
-      text-transform:uppercase;
-      color: var(--muted);
-      padding: 14px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      text-align:left;
-    }
-    tbody td{
-      padding: 12px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      font-size: 14px;
-    }
-    tbody tr{
-      transition: background .2s ease;
-    }
-    tbody tr:hover{
-      background: rgba(0,255,153,0.06);
-    }
-
-    .playerCell{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
-    }
-    .miniRing{
-      width: 40px;height:40px;border-radius:999px;
-      padding: 1.5px;
-      background: conic-gradient(from 90deg, rgba(0,255,153,0.0), rgba(0,255,153,0.55), rgba(0,200,255,0.45), rgba(0,255,153,0.0));
-      flex: 0 0 auto;
-    }
-    .miniAv{
-      width: 37px;height:37px;border-radius:999px;
-      object-fit:cover;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      display:block;
-    }
-    .nameSmall{
-      font-weight:800;
-      letter-spacing:0.4px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width: 620px;
-    }
-
-    .right{ text-align:right; }
-
-    .empty{
-      padding: 18px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-  </style>
+  <!-- ✅ NEW esports stylesheet -->
+  <link rel="stylesheet" href="leaderboard.css">
 </head>
 
 <body>
+
 <header class="site-header">
   <div class="header-inner">
     <div class="brand">
@@ -463,7 +29,7 @@
     <div class="header-actions">
       <div id="lastUpdate" class="pill">Last update: --</div>
       <a class="btn ghost" href="/admin.html">ADMIN</a>
-      <button class="btn primary" id="refreshBtn" type="button">REFRESH</button>
+      <button class="btn primary" id="refreshBtn">REFRESH</button>
     </div>
   </div>
 </header>
@@ -475,195 +41,113 @@
   </div>
 
   <div class="controls">
-    <div class="control-left">
-      <input id="search" class="input" placeholder="Search player..." />
-    </div>
-    <div class="control-right">
-      <div class="pill">Sort</div>
-      <select id="sort" class="select">
-        <option value="elo">ELO</option>
-        <option value="level">LEVEL</option>
-        <option value="name">NAME</option>
-      </select>
-    </div>
+    <input id="search" class="input" placeholder="Search player...">
+    <select id="sort" class="select">
+      <option value="elo">ELO</option>
+      <option value="level">LEVEL</option>
+      <option value="name">NAME</option>
+    </select>
   </div>
 
-  <div id="podium" class="podium" aria-hidden="true"></div>
+  <div id="podium" class="podium"></div>
 
   <div class="table-card">
     <table>
       <thead>
         <tr>
-          <th style="width:70px;">#</th>
+          <th>#</th>
           <th>PLAYER</th>
-          <th class="right" style="width:120px;">LEVEL</th>
-          <th class="right" style="width:140px;">ELO</th>
+          <th class="right">LEVEL</th>
+          <th class="right">ELO</th>
         </tr>
       </thead>
       <tbody id="board"></tbody>
     </table>
-    <div id="emptyState" class="empty" style="display:none;"></div>
+    <div id="emptyState" class="empty"></div>
   </div>
 </div>
 
 <script type="module">
-  const statusEl = document.getElementById("status");
-  const podiumEl = document.getElementById("podium");
-  const boardEl = document.getElementById("board");
-  const lastUpdateEl = document.getElementById("lastUpdate");
-  const refreshBtn = document.getElementById("refreshBtn");
-  const searchEl = document.getElementById("search");
-  const sortEl = document.getElementById("sort");
-  const emptyEl = document.getElementById("emptyState");
+  const board = document.getElementById("board");
+  const podium = document.getElementById("podium");
+  const status = document.getElementById("status");
+  const lastUpdate = document.getElementById("lastUpdate");
+  const search = document.getElementById("search");
+  const sort = document.getElementById("sort");
+  const empty = document.getElementById("emptyState");
 
-  let allPlayers = [];
-  let viewPlayers = [];
+  let all = [];
 
-  function safeAvatar(url){
-    return url && String(url).trim().length ? url : "https://via.placeholder.com/64";
-  }
+  const avatar = a => a || "https://via.placeholder.com/64";
 
-  function medalClass(i){
-    if(i === 0) return "gold";
-    if(i === 1) return "silver";
-    if(i === 2) return "bronze";
-    return "";
-  }
-
-  function crownSvg(){
-    return `
-      <svg class="crown" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M4 8l4 4 4-7 4 7 4-4v10H4V8z" stroke="rgba(255,215,0,0.95)" stroke-width="1.6"/>
-        <path d="M4 18h16" stroke="rgba(255,215,0,0.7)" stroke-width="1.2"/>
-      </svg>
-    `;
-  }
-
-  function setLastUpdate(){
-    const d = new Date();
-    lastUpdateEl.textContent = "Last update: " + d.toLocaleString();
-  }
-
-  function applyFilterAndSort(){
-    const q = searchEl.value.trim().toLowerCase();
-    viewPlayers = allPlayers.filter(p => (p.nickname || "").toLowerCase().includes(q));
-
-    const mode = sortEl.value;
-    if(mode === "elo"){
-      viewPlayers.sort((a,b) => (b.elo ?? -1) - (a.elo ?? -1));
-    }else if(mode === "level"){
-      viewPlayers.sort((a,b) => (b.level ?? -1) - (a.level ?? -1));
-    }else{
-      viewPlayers.sort((a,b) => String(a.nickname||"").localeCompare(String(b.nickname||"")));
-    }
-
-    render();
+  function updateTime(){
+    lastUpdate.textContent = "Last update: " + new Date().toLocaleString();
   }
 
   function render(){
-    if(!Array.isArray(viewPlayers) || viewPlayers.length === 0){
-      podiumEl.setAttribute("aria-hidden","true");
-      podiumEl.innerHTML = "";
-      boardEl.innerHTML = "";
-      emptyEl.style.display = "block";
-      emptyEl.textContent = allPlayers.length === 0
-        ? "No players yet. Add players in Admin Panel."
-        : "No players match your search.";
+    let list = [...all];
+    const q = search.value.toLowerCase();
+    list = list.filter(p => p.nickname.toLowerCase().includes(q));
+
+    if(sort.value === "elo") list.sort((a,b)=>b.elo-a.elo);
+    if(sort.value === "level") list.sort((a,b)=>b.level-a.level);
+    if(sort.value === "name") list.sort((a,b)=>a.nickname.localeCompare(b.nickname));
+
+    board.innerHTML = "";
+    podium.innerHTML = "";
+
+    if(list.length === 0){
+      empty.textContent = "No players found.";
       return;
     }
 
-    emptyEl.style.display = "none";
-
-    const top = viewPlayers.slice(0,3);
-    const order = [1,0,2].filter(i => top[i]);
-
-    podiumEl.innerHTML = "";
-    podiumEl.setAttribute("aria-hidden", top.length < 3 ? "true" : "false");
-
-    if(top.length >= 3){
-      order.forEach((idx) => {
-        const p = top[idx];
-        const rank = idx + 1;
-        const isChamp = rank === 1;
-
-        const card = document.createElement("div");
-        card.className = "pod-card" + (isChamp ? " champ" : "");
-        const ringCls = isChamp ? "ring gold" : "ring";
-
-        card.innerHTML = `
-          <div class="pod-head">
-            <span class="rankTag ${medalClass(idx)}">
-              ${isChamp ? crownSvg() : ""}
-              #${rank} ${isChamp ? "CHAMPION" : (rank===2 ? "RUNNER-UP" : "TOP 3")}
-            </span>
-            <span>${p.elo} ELO</span>
-          </div>
-
+    // TOP 3
+    list.slice(0,3).forEach((p,i)=>{
+      podium.innerHTML += `
+        <div class="pod-card ${i===0?'champ':''}">
+          <div class="pod-head">#${i+1} <span>${p.elo} ELO</span></div>
           <div class="pod-player">
-            <div class="${ringCls}">
-              <img class="av" src="${safeAvatar(p.avatar)}" alt="">
-            </div>
-            <div style="min-width:0;">
-              <div class="pname" title="${p.nickname}">${p.nickname}</div>
-              <div class="pmeta">
-                <span class="badge">LVL ${p.level}</span>
-                <span class="badge">ID SAFE</span>
-              </div>
+            <img src="${avatar(p.avatar)}">
+            <div>
+              <div class="pname">${p.nickname}</div>
+              <div class="pmeta">LVL ${p.level}</div>
             </div>
           </div>
-        `;
-        podiumEl.appendChild(card);
-      });
-    }
-
-    boardEl.innerHTML = "";
-    viewPlayers.slice(3).forEach((p, i) => {
-      const rank = i + 4;
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${rank}</td>
-        <td>
-          <div class="playerCell">
-            <div class="miniRing"><img class="miniAv" src="${safeAvatar(p.avatar)}" alt=""></div>
-            <div class="nameSmall" title="${p.nickname}">${p.nickname}</div>
-          </div>
-        </td>
-        <td class="right">${p.level}</td>
-        <td class="right">${p.elo}</td>
+        </div>
       `;
-      boardEl.appendChild(tr);
+    });
+
+    // TABLE
+    list.slice(3).forEach((p,i)=>{
+      board.innerHTML += `
+        <tr>
+          <td>${i+4}</td>
+          <td class="playerCell">
+            <img src="${avatar(p.avatar)}">
+            ${p.nickname}
+          </td>
+          <td class="right">${p.level}</td>
+          <td class="right">${p.elo}</td>
+        </tr>
+      `;
     });
   }
 
-  async function loadLeaderboard(){
-    try{
-      statusEl.textContent = "Loading...";
-      const res = await fetch("/leaderboard", { cache: "no-store" });
-      if(!res.ok) throw new Error("HTTP " + res.status);
-
-      const data = await res.json();
-      allPlayers = Array.isArray(data) ? data : [];
-
-      statusEl.textContent = "LIVE • Auto refresh 60s";
-      setLastUpdate();
-      applyFilterAndSort();
-    }catch(e){
-      console.error(e);
-      statusEl.textContent = "Error loading leaderboard.";
-      podiumEl.setAttribute("aria-hidden","true");
-      podiumEl.innerHTML = "";
-      boardEl.innerHTML = "";
-      emptyEl.style.display = "block";
-      emptyEl.textContent = "Could not load leaderboard. Check server / API keys.";
-    }
+  async function load(){
+    status.textContent = "Loading...";
+    const res = await fetch("/leaderboard");
+    all = await res.json();
+    status.textContent = "LIVE";
+    updateTime();
+    render();
   }
 
-  refreshBtn.addEventListener("click", loadLeaderboard);
-  searchEl.addEventListener("input", applyFilterAndSort);
-  sortEl.addEventListener("change", applyFilterAndSort);
+  search.oninput = render;
+  sort.onchange = render;
+  document.getElementById("refreshBtn").onclick = load;
 
-  loadLeaderboard();
-  setInterval(loadLeaderboard, 60000);
+  load();
+  setInterval(load, 60000);
 </script>
 
 </body>
