@@ -1,35 +1,53 @@
 const express = require("express");
 const axios = require("axios");
-const players = require("./players");
-const path = require("path");
 const fs = require("fs");
+const path = require("path");
 
 const app = express();
-
-// ✅ VERY IMPORTANT (needed for POST requests)
 app.use(express.json());
 
-// Serve frontend files from "public" folder
+// ============================
+// ⚙ CONFIG
+// ============================
+
+const FACEIT_API = "https://open.faceit.com/data/v4";
+const API_KEY = process.env.FACEIT_API_KEY; // set this in Render
+const ADMIN_PASSWORD = "MatrixAdmin123"; // change this
+
+// ============================
+// 📂 STATIC FILES
+// ============================
+
 app.use(express.static(path.join(__dirname, "public")));
 
-// Serve index.html at root
 app.get("/", (req, res) =>
   res.sendFile(path.join(__dirname, "public", "index.html"))
 );
 
-// Faceit API setup
-const FACEIT_API = "https://open.faceit.com/data/v4";
-const API_KEY = "a68f9584-e988-4c48-a164-5fe3a2796bc2";
+// ============================
+// 🔐 ADMIN AUTH MIDDLEWARE
+// ============================
+
+app.use("/admin", (req, res, next) => {
+  const password = req.headers["x-admin-password"];
+
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+
+  next();
+});
 
 // ============================
 // 🏆 LEADERBOARD (ID BASED)
 // ============================
+
 app.get("/leaderboard", async (req, res) => {
+  const players = require("./players");
   const results = [];
 
   for (const playerId of players) {
     try {
-      // ✅ NOW USING PLAYER ID INSTEAD OF NICKNAME
       const response = await axios.get(
         `${FACEIT_API}/players/${playerId}`,
         {
@@ -42,33 +60,31 @@ app.get("/leaderboard", async (req, res) => {
       if (!cs2) continue;
 
       results.push({
-        nickname: p.nickname, // nickname auto-updates if changed
+        nickname: p.nickname,
         avatar: p.avatar || "https://via.placeholder.com/36",
         elo: cs2.faceit_elo,
         level: cs2.skill_level
       });
     } catch (err) {
-      console.warn("Skipping:", playerId, "-", err.message);
+      console.log("Error loading:", playerId);
     }
   }
 
-  // Sort by ELO descending
   results.sort((a, b) => b.elo - a.elo);
   res.json(results);
 });
 
 // ============================
-// 🔐 ADMIN ADD PLAYER
+// ➕ ADD PLAYER
 // ============================
+
 app.post("/admin/add-player", async (req, res) => {
   const { nickname } = req.body;
 
-  if (!nickname) {
-    return res.status(400).json({ error: "Nickname is required" });
-  }
+  if (!nickname)
+    return res.status(400).json({ error: "Nickname required" });
 
   try {
-    // 1️⃣ Get player data by nickname
     const response = await axios.get(
       `${FACEIT_API}/players?nickname=${encodeURIComponent(nickname)}`,
       {
@@ -77,29 +93,73 @@ app.post("/admin/add-player", async (req, res) => {
     );
 
     const playerId = response.data.player_id;
+    const players = require("./players");
 
-    // 2️⃣ Load current players list
-    const currentPlayers = require("./players");
+    if (!players.includes(playerId)) {
+      players.push(playerId);
 
-    // 3️⃣ Prevent duplicates
-    if (!currentPlayers.includes(playerId)) {
-      currentPlayers.push(playerId);
-
-      // 4️⃣ Rewrite players.js with IDs
       fs.writeFileSync(
         "./players.js",
-        "module.exports = " + JSON.stringify(currentPlayers, null, 2)
+        "module.exports = " + JSON.stringify(players, null, 2)
       );
     }
 
-    res.json({ success: true, playerId });
-  } catch (err) {
+    res.json({ success: true });
+  } catch {
     res.status(400).json({ error: "Player not found on Faceit" });
   }
 });
 
-// Dynamic port for Render or fallback to 3000
+// ============================
+// ❌ REMOVE PLAYER
+// ============================
+
+app.delete("/admin/remove-player/:id", (req, res) => {
+  const playerId = req.params.id;
+  const players = require("./players");
+
+  const updated = players.filter(id => id !== playerId);
+
+  fs.writeFileSync(
+    "./players.js",
+    "module.exports = " + JSON.stringify(updated, null, 2)
+  );
+
+  res.json({ success: true });
+});
+
+// ============================
+// 📋 LIST PLAYERS
+// ============================
+
+app.get("/admin/list-players", async (req, res) => {
+  const players = require("./players");
+  const list = [];
+
+  for (const playerId of players) {
+    try {
+      const response = await axios.get(
+        `${FACEIT_API}/players/${playerId}`,
+        {
+          headers: { Authorization: `Bearer ${API_KEY}` }
+        }
+      );
+
+      list.push({
+        id: playerId,
+        nickname: response.data.nickname
+      });
+    } catch {}
+  }
+
+  res.json(list);
+});
+
+// ============================
+// 🚀 START SERVER
+// ============================
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () =>
-  console.log(`✅ Backend running on port ${PORT}`)
+  console.log(`✅ Server running on port ${PORT}`)
 );
