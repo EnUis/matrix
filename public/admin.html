@@ -1,69 +1,155 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin Panel</title>
-  <style>
-    body {
-      background: #111;
-      color: white;
-      font-family: Arial;
-      text-align: center;
-      margin-top: 100px;
-    }
+<meta charset="UTF-8">
+<title>Matrix Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 
-    input {
-      padding: 10px;
-      width: 300px;
-      font-size: 16px;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  background: radial-gradient(circle at top, #0f2027, #0f0f0f);
+  color: white;
+}
 
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      background: #00ff88;
-      border: none;
-      margin-left: 10px;
-    }
+.container {
+  width: 1000px;
+  margin: 60px auto;
+}
 
-    #status {
-      margin-top: 20px;
-    }
-  </style>
+.card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(0,255,150,0.2);
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 0 30px rgba(0,255,150,0.1);
+}
+
+h1 {
+  text-align: center;
+  color: #00ff99;
+  font-weight: 900;
+}
+
+input {
+  padding: 12px;
+  width: 350px;
+  background: #111;
+  border: 1px solid #00ff99;
+  color: white;
+}
+
+button {
+  padding: 12px 20px;
+  background: #00ff99;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button.danger {
+  background: #ff3c3c;
+}
+
+.player-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+</style>
 </head>
 <body>
 
-  <h1>Admin Panel - Add Player</h1>
+<div id="login" class="container">
+  <div class="card">
+    <h1>🔐 MATRIX ADMIN LOGIN</h1>
+    <input type="password" id="password" placeholder="Enter Admin Password">
+    <button onclick="login()">Login</button>
+    <p id="loginStatus"></p>
+  </div>
+</div>
 
-  <input id="nickname" placeholder="Enter Faceit Nickname">
-  <button onclick="addPlayer()">Add Player</button>
+<div id="panel" class="container" style="display:none;">
+  <h1>🎮 MATRIX CONTROL PANEL</h1>
 
-  <div id="status"></div>
+  <div class="card">
+    <input id="nickname" placeholder="Faceit Nickname">
+    <button onclick="addPlayer()">Add Player</button>
+  </div>
 
-  <script>
-    async function addPlayer() {
-      const nickname = document.getElementById("nickname").value;
-      const status = document.getElementById("status");
+  <div class="card">
+    <h2>Registered Players</h2>
+    <div id="players"></div>
+  </div>
 
-      status.textContent = "Adding player...";
+  <button onclick="logout()">Logout</button>
+</div>
 
-      const res = await fetch("/admin/add-player", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ nickname })
-      });
+<script>
+async function login() {
+  const password = document.getElementById("password").value;
 
-      const data = await res.json();
+  const res = await fetch("/admin/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password })
+  });
 
-      if (data.success) {
-        status.textContent = "Player added! ID: " + data.playerId;
-      } else {
-        status.textContent = "Error: " + data.error;
-      }
-    }
-  </script>
+  const data = await res.json();
+
+  if (data.success) {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+    loadPlayers();
+  } else {
+    document.getElementById("loginStatus").textContent = "Wrong password";
+  }
+}
+
+async function logout() {
+  await fetch("/admin/logout", { method: "POST" });
+  location.reload();
+}
+
+async function loadPlayers() {
+  const res = await fetch("/admin/list");
+  if (res.status !== 200) return location.reload();
+
+  const players = await res.json();
+  const container = document.getElementById("players");
+  container.innerHTML = "";
+
+  players.forEach(p => {
+    const div = document.createElement("div");
+    div.className = "player-row";
+    div.innerHTML = `
+      <span>${p.nickname} | LVL ${p.level} | ${p.elo} ELO</span>
+      <button class="danger" onclick="removePlayer('${p.id}')">Remove</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+async function addPlayer() {
+  const nickname = document.getElementById("nickname").value;
+
+  await fetch("/admin/add", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nickname })
+  });
+
+  loadPlayers();
+}
+
+async function removePlayer(id) {
+  await fetch("/admin/remove/" + id, { method: "DELETE" });
+  loadPlayers();
+}
+</script>
 
 </body>
 </html>
