@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FACEIT Leaderboard</title>
+  <title>MATRIX Leaderboard</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,27 +11,25 @@
 
   <style>
     :root{
-      --bg0:#060812;
-      --bg1:#0b1020;
-      --card: rgba(255,255,255,0.055);
+      --bg0:#05060b;
+      --bg1:#080b14;
+      --card: rgba(255,255,255,0.06);
       --card2: rgba(255,255,255,0.035);
-      --stroke: rgba(255,255,255,0.11);
+      --stroke: rgba(255,255,255,0.12);
       --stroke2: rgba(255,255,255,0.08);
-      --muted: rgba(255,255,255,0.70);
+      --muted: rgba(255,255,255,0.72);
 
-      --accent: #00ff99;
+      --accent:#00ff99;
       --accent2:#00c8ff;
-      --glow: rgba(0,255,153,0.18);
-      --glow2: rgba(0,200,255,0.14);
+      --glow: rgba(0,255,153,0.20);
+      --glow2: rgba(0,200,255,0.16);
 
       --gold:#ffd700;
       --silver:#cfd6e6;
       --bronze:#d99a5d;
 
-      --shadow: 0 18px 65px rgba(0,0,0,0.55);
-      --shadow2: 0 12px 45px rgba(0,0,0,0.45);
-
-      --radius: 18px;
+      --shadow: 0 18px 70px rgba(0,0,0,0.60);
+      --shadow2: 0 10px 40px rgba(0,0,0,0.45);
     }
 
     *{ box-sizing:border-box; }
@@ -41,42 +39,50 @@
       font-family:'Orbitron', sans-serif;
       color:#fff;
       background:
-        radial-gradient(900px 500px at 18% -12%, rgba(0,255,153,0.13), transparent 60%),
-        radial-gradient(900px 500px at 82% -12%, rgba(0,200,255,0.11), transparent 62%),
-        radial-gradient(900px 450px at 50% 115%, rgba(255,215,0,0.08), transparent 60%),
+        radial-gradient(900px 520px at 15% -15%, rgba(0,255,153,0.14), transparent 62%),
+        radial-gradient(900px 520px at 85% -15%, rgba(0,200,255,0.12), transparent 62%),
+        radial-gradient(900px 450px at 50% 120%, rgba(255,215,0,0.09), transparent 62%),
         linear-gradient(180deg, var(--bg1), var(--bg0));
       overflow-x:hidden;
     }
 
-    /* subtle moving light */
+    /* esports scanline + noise (subtle) */
     body::before{
       content:"";
       position:fixed;
-      inset:-20%;
-      background:
-        radial-gradient(600px 250px at 15% 15%, rgba(0,255,153,0.12), transparent 55%),
-        radial-gradient(600px 250px at 85% 10%, rgba(0,200,255,0.10), transparent 55%);
-      filter: blur(18px);
-      opacity:0.75;
-      animation: floatGlow 8s ease-in-out infinite alternate;
+      inset:0;
       pointer-events:none;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255,255,255,0.028),
+          rgba(255,255,255,0.028) 1px,
+          transparent 1px,
+          transparent 6px
+        );
+      opacity:0.25;
+      mix-blend-mode:overlay;
     }
-    @keyframes floatGlow{
-      from{ transform: translate3d(-1.5%, -1%, 0) scale(1.02); }
-      to  { transform: translate3d( 1.5%,  1%, 0) scale(1.04); }
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
+      opacity:0.05;
     }
 
     /* HEADER */
     .site-header{
-      position: sticky;
-      top: 0;
-      z-index: 20;
+      position:sticky;
+      top:0;
+      z-index:20;
       backdrop-filter: blur(12px);
-      background: rgba(0,0,0,0.36);
+      background: rgba(0,0,0,0.40);
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
     .header-inner{
-      width: min(1180px, 94vw);
+      width: min(1200px, 94vw);
       margin: 0 auto;
       padding: 14px 0;
       display:flex;
@@ -87,18 +93,17 @@
     .brand{
       display:flex;
       align-items:center;
-      gap: 12px;
+      gap:12px;
       min-width:0;
     }
-    .site-logo{
-      width: 46px;
-      height: 46px;
-      border-radius: 14px;
-      object-fit: cover;
+    .logo{
+      width:46px;height:46px;border-radius:14px;
+      object-fit:cover;
       background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow: 0 0 20px rgba(0,255,153,0.10);
+      border:1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 0 18px rgba(0,255,153,0.10);
     }
+    .titleWrap{ min-width:0; }
     .site-title{
       font-weight:800;
       letter-spacing:1px;
@@ -107,6 +112,14 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      line-height:1.1;
+    }
+    .subtitle{
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.8px;
+      text-transform:uppercase;
+      margin-top:2px;
     }
 
     .header-actions{
@@ -128,12 +141,12 @@
       font-size:12px;
       user-select:none;
     }
+
     .btn{
       font-family:inherit;
       font-weight:800;
       letter-spacing:0.6px;
       cursor:pointer;
-      border-radius:14px;
       padding:10px 12px;
       color:#fff;
       background: rgba(255,255,255,0.06);
@@ -144,29 +157,32 @@
       align-items:center;
       gap:8px;
       user-select:none;
+
+      /* angled esports shape */
+      clip-path: polygon(0 0, 92% 0, 100% 35%, 100% 100%, 8% 100%, 0 65%);
+      border-radius: 0; /* clip-path makes it look sharp */
     }
     .btn:hover{
       border-color: rgba(0,255,153,0.45);
-      box-shadow: 0 0 18px var(--glow);
+      box-shadow: 0 0 20px var(--glow);
     }
     .btn:active{ transform: translateY(1px); }
     .btn.primary{
-      background: linear-gradient(180deg, rgba(0,255,153,0.18), rgba(0,255,153,0.08));
+      background: linear-gradient(180deg, rgba(0,255,153,0.20), rgba(0,255,153,0.08));
       border-color: rgba(0,255,153,0.45);
     }
     .btn.ghost:hover{
       border-color: rgba(0,200,255,0.45);
-      box-shadow: 0 0 18px var(--glow2);
+      box-shadow: 0 0 20px var(--glow2);
     }
 
     /* MAIN */
     .container{
-      width: min(1180px, 94vw);
+      width: min(1200px, 94vw);
       margin: 26px auto 80px;
       position:relative;
       z-index: 1;
     }
-
     .topline{
       display:flex;
       align-items:flex-end;
@@ -194,7 +210,7 @@
       flex-wrap:wrap;
       align-items:center;
       justify-content:space-between;
-      margin: 10px 0 14px;
+      margin: 10px 0 16px;
     }
     .control-left, .control-right{
       display:flex;
@@ -203,14 +219,16 @@
       align-items:center;
     }
     .input{
-      background: rgba(0,0,0,0.28);
+      background: rgba(0,0,0,0.30);
       border: 1px solid rgba(255,255,255,0.12);
       color:#fff;
       padding: 11px 12px;
-      border-radius: 14px;
       outline:none;
       width: min(360px, 92vw);
       font-family:inherit;
+      font-weight:600;
+
+      clip-path: polygon(0 0, 94% 0, 100% 40%, 100% 100%, 6% 100%, 0 60%);
     }
     .input:focus{
       border-color: rgba(0,255,153,0.45);
@@ -218,71 +236,71 @@
     }
     .select{
       appearance:none;
-      background: rgba(0,0,0,0.28);
+      background: rgba(0,0,0,0.30);
       border: 1px solid rgba(255,255,255,0.12);
       color:#fff;
       padding: 11px 12px;
-      border-radius: 14px;
       outline:none;
       font-family:inherit;
       font-weight:800;
       letter-spacing:0.4px;
       cursor:pointer;
+
+      clip-path: polygon(0 0, 94% 0, 100% 40%, 100% 100%, 6% 100%, 0 60%);
     }
 
-    /* PODIUM TOP 3 */
+    /* PODIUM */
     .podium{
       display:grid;
       grid-template-columns: 1fr 1.12fr 1fr;
       gap:14px;
-      margin: 10px 0 16px;
+      margin: 8px 0 16px;
     }
-    @media (max-width: 920px){
-      .podium{ grid-template-columns: 1fr; }
-    }
+    @media (max-width: 920px){ .podium{ grid-template-columns: 1fr; } }
 
     .pod-card{
       position:relative;
-      border-radius: var(--radius);
       padding: 16px;
-      background: linear-gradient(180deg, var(--card), rgba(0,0,0,0.22));
-      border: 1px solid var(--stroke);
+      background: linear-gradient(180deg, var(--card), rgba(0,0,0,0.20));
+      border: 1px solid rgba(255,255,255,0.12);
       box-shadow: var(--shadow2);
       overflow:hidden;
+
+      /* esports angle */
+      clip-path: polygon(0 0, 96% 0, 100% 18%, 100% 100%, 4% 100%, 0 82%);
     }
+
     .pod-card::before{
       content:"";
       position:absolute;
       inset:-2px;
       background:
-        radial-gradient(620px 220px at 20% 0%, rgba(0,255,153,0.14), transparent 60%),
-        radial-gradient(620px 220px at 80% 0%, rgba(0,200,255,0.12), transparent 60%);
+        radial-gradient(620px 240px at 20% 0%, rgba(0,255,153,0.15), transparent 62%),
+        radial-gradient(620px 240px at 80% 0%, rgba(0,200,255,0.12), transparent 62%);
       opacity:0.9;
       pointer-events:none;
     }
     .pod-card > *{ position:relative; z-index:1; }
 
     .pod-card.champ{
-      border-color: rgba(255,215,0,0.22);
-      box-shadow: var(--shadow), 0 0 28px rgba(255,215,0,0.10);
+      border-color: rgba(255,215,0,0.25);
+      box-shadow: var(--shadow), 0 0 28px rgba(255,215,0,0.12);
       transform: scale(1.03);
     }
-    @media (max-width: 920px){
-      .pod-card.champ{ transform:none; }
-    }
+    @media (max-width: 920px){ .pod-card.champ{ transform:none; } }
 
     .pod-head{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      margin-bottom:12px;
+      margin-bottom: 12px;
       color: var(--muted);
-      font-size:12px;
+      font-size: 12px;
     }
+
     .rankTag{
       padding:6px 10px;
-      border-radius:999px;
       border:1px solid rgba(255,255,255,0.12);
       background: rgba(0,0,0,0.22);
       font-weight:800;
@@ -291,10 +309,18 @@
       align-items:center;
       gap:8px;
       user-select:none;
+
+      clip-path: polygon(0 0, 92% 0, 100% 45%, 100% 100%, 8% 100%, 0 55%);
     }
     .rankTag.gold{ color: var(--gold); border-color: rgba(255,215,0,0.35); }
     .rankTag.silver{ color: var(--silver); border-color: rgba(207,214,230,0.30); }
     .rankTag.bronze{ color: var(--bronze); border-color: rgba(217,154,93,0.35); }
+
+    .crown{
+      display:inline-flex;
+      width:18px;height:18px;
+      filter: drop-shadow(0 0 10px rgba(255,215,0,0.25));
+    }
 
     .pod-player{
       display:flex;
@@ -304,22 +330,18 @@
     }
 
     .ring{
-      width: 56px;
-      height: 56px;
-      border-radius: 999px;
-      padding: 2px;
+      width: 58px;height:58px;border-radius:999px;
+      padding:2px;
       background: conic-gradient(from 90deg, rgba(0,255,153,0.0), rgba(0,255,153,0.75), rgba(0,200,255,0.55), rgba(0,255,153,0.0));
-      box-shadow: 0 0 20px rgba(0,255,153,0.10);
+      box-shadow: 0 0 22px rgba(0,255,153,0.12);
       flex: 0 0 auto;
     }
     .ring.gold{
       background: conic-gradient(from 90deg, rgba(255,215,0,0.0), rgba(255,215,0,0.75), rgba(0,255,153,0.35), rgba(255,215,0,0.0));
-      box-shadow: 0 0 22px rgba(255,215,0,0.10);
+      box-shadow: 0 0 24px rgba(255,215,0,0.12);
     }
     .av{
-      width: 52px;
-      height: 52px;
-      border-radius: 999px;
+      width: 54px;height:54px;border-radius:999px;
       object-fit:cover;
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.12);
@@ -333,7 +355,7 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      max-width: 440px;
+      max-width: 520px;
     }
     .pmeta{
       margin-top:6px;
@@ -345,26 +367,28 @@
     }
     .badge{
       padding:6px 10px;
-      border-radius:999px;
       border:1px solid rgba(255,255,255,0.10);
       background: rgba(255,255,255,0.05);
       user-select:none;
+
+      clip-path: polygon(0 0, 94% 0, 100% 45%, 100% 100%, 6% 100%, 0 55%);
     }
 
-    /* TABLE CARD */
+    /* TABLE */
     .table-card{
-      border-radius: var(--radius);
-      overflow:hidden;
-      border: 1px solid var(--stroke2);
+      border: 1px solid rgba(255,255,255,0.10);
       background: rgba(255,255,255,0.035);
       box-shadow: var(--shadow);
+      overflow:hidden;
+
+      clip-path: polygon(0 0, 98% 0, 100% 12%, 100% 100%, 2% 100%, 0 88%);
     }
     table{
       width:100%;
       border-collapse:collapse;
     }
     thead{
-      background: rgba(0,0,0,0.30);
+      background: rgba(0,0,0,0.35);
     }
     thead th{
       font-size:12px;
@@ -384,7 +408,7 @@
       transition: background .2s ease;
     }
     tbody tr:hover{
-      background: rgba(0,255,153,0.05);
+      background: rgba(0,255,153,0.06);
     }
 
     .playerCell{
@@ -394,17 +418,13 @@
       min-width:0;
     }
     .miniRing{
-      width: 38px;
-      height: 38px;
-      border-radius: 999px;
+      width: 40px;height:40px;border-radius:999px;
       padding: 1.5px;
       background: conic-gradient(from 90deg, rgba(0,255,153,0.0), rgba(0,255,153,0.55), rgba(0,200,255,0.45), rgba(0,255,153,0.0));
       flex: 0 0 auto;
     }
     .miniAv{
-      width: 35px;
-      height: 35px;
-      border-radius: 999px;
+      width: 37px;height:37px;border-radius:999px;
       object-fit:cover;
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.12);
@@ -416,33 +436,10 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      max-width: 520px;
+      max-width: 620px;
     }
 
     .right{ text-align:right; }
-
-    /* SKELETON */
-    .skel{
-      position:relative;
-      overflow:hidden;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-    .skel::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      transform: translateX(-120%);
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent);
-      animation: shimmer 1.2s infinite;
-    }
-    @keyframes shimmer{
-      100%{ transform: translateX(120%); }
-    }
-
-    .pod-skel-line{ height:14px; border-radius:999px; }
-    .pod-skel-name{ height:16px; border-radius:999px; width: 70%; }
-    .pod-skel-badge{ height:12px; border-radius:999px; width: 40%; }
 
     .empty{
       padding: 18px;
@@ -453,16 +450,19 @@
 </head>
 
 <body>
-<header class="site-header" aria-label="Site header">
+<header class="site-header">
   <div class="header-inner">
     <div class="brand">
-      <img src="logo.png" alt="Site logo" class="site-logo" />
-      <div class="site-title">FACEIT ELO</div>
+      <img src="logo.png" class="logo" alt="Logo">
+      <div class="titleWrap">
+        <div class="site-title">MATRIX FACEIT ELO</div>
+        <div class="subtitle">LIVE LEADERBOARD • ID SAFE</div>
+      </div>
     </div>
 
     <div class="header-actions">
       <div id="lastUpdate" class="pill">Last update: --</div>
-      <a class="btn ghost" href="/admin.html" title="Admin Panel">ADMIN</a>
+      <a class="btn ghost" href="/admin.html">ADMIN</a>
       <button class="btn primary" id="refreshBtn" type="button">REFRESH</button>
     </div>
   </div>
@@ -470,7 +470,7 @@
 
 <div class="container">
   <div class="topline">
-    <h1>MATRIX LEADERBOARD</h1>
+    <h1>LEADERBOARD</h1>
     <p id="status" class="status">Loading...</p>
   </div>
 
@@ -530,67 +530,18 @@
     return "";
   }
 
+  function crownSvg(){
+    return `
+      <svg class="crown" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 8l4 4 4-7 4 7 4-4v10H4V8z" stroke="rgba(255,215,0,0.95)" stroke-width="1.6"/>
+        <path d="M4 18h16" stroke="rgba(255,215,0,0.7)" stroke-width="1.2"/>
+      </svg>
+    `;
+  }
+
   function setLastUpdate(){
     const d = new Date();
     lastUpdateEl.textContent = "Last update: " + d.toLocaleString();
-  }
-
-  function setLoadingUI(){
-    statusEl.textContent = "Loading...";
-    podiumEl.setAttribute("aria-hidden","false");
-    podiumEl.innerHTML = `
-      <div class="pod-card">
-        <div class="pod-head">
-          <span class="rankTag gold">#1</span>
-          <span class="skel pod-skel-line" style="width:80px;"></span>
-        </div>
-        <div class="pod-player">
-          <div class="ring gold"><div class="av skel"></div></div>
-          <div style="min-width:0; flex:1;">
-            <div class="skel pod-skel-name"></div>
-            <div class="pmeta">
-              <span class="skel pod-skel-badge"></span>
-              <span class="skel pod-skel-badge" style="width:55%;"></span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="pod-card">
-        <div class="pod-head">
-          <span class="rankTag silver">#2</span>
-          <span class="skel pod-skel-line" style="width:80px;"></span>
-        </div>
-        <div class="pod-player">
-          <div class="ring"><div class="av skel"></div></div>
-          <div style="min-width:0; flex:1;">
-            <div class="skel pod-skel-name"></div>
-            <div class="pmeta">
-              <span class="skel pod-skel-badge"></span>
-              <span class="skel pod-skel-badge" style="width:55%;"></span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="pod-card">
-        <div class="pod-head">
-          <span class="rankTag bronze">#3</span>
-          <span class="skel pod-skel-line" style="width:80px;"></span>
-        </div>
-        <div class="pod-player">
-          <div class="ring"><div class="av skel"></div></div>
-          <div style="min-width:0; flex:1;">
-            <div class="skel pod-skel-name"></div>
-            <div class="pmeta">
-              <span class="skel pod-skel-badge"></span>
-              <span class="skel pod-skel-badge" style="width:55%;"></span>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    boardEl.innerHTML = "";
-    emptyEl.style.display = "none";
   }
 
   function applyFilterAndSort(){
@@ -623,12 +574,12 @@
 
     emptyEl.style.display = "none";
 
-    // Top 3 podium (show best center visually)
     const top = viewPlayers.slice(0,3);
     const order = [1,0,2].filter(i => top[i]);
 
-    podiumEl.setAttribute("aria-hidden", top.length < 3 ? "true" : "false");
     podiumEl.innerHTML = "";
+    podiumEl.setAttribute("aria-hidden", top.length < 3 ? "true" : "false");
+
     if(top.length >= 3){
       order.forEach((idx) => {
         const p = top[idx];
@@ -641,7 +592,10 @@
 
         card.innerHTML = `
           <div class="pod-head">
-            <span class="rankTag ${medalClass(idx)}">#${rank} ${isChamp ? "CHAMPION" : rank===2 ? "RUNNER-UP" : "TOP 3"}</span>
+            <span class="rankTag ${medalClass(idx)}">
+              ${isChamp ? crownSvg() : ""}
+              #${rank} ${isChamp ? "CHAMPION" : (rank===2 ? "RUNNER-UP" : "TOP 3")}
+            </span>
             <span>${p.elo} ELO</span>
           </div>
 
@@ -653,19 +607,15 @@
               <div class="pname" title="${p.nickname}">${p.nickname}</div>
               <div class="pmeta">
                 <span class="badge">LVL ${p.level}</span>
-                <span class="badge">ID-SAFE</span>
+                <span class="badge">ID SAFE</span>
               </div>
             </div>
           </div>
         `;
         podiumEl.appendChild(card);
       });
-    } else {
-      podiumEl.setAttribute("aria-hidden","true");
-      podiumEl.innerHTML = "";
     }
 
-    // Table (rank 4+)
     boardEl.innerHTML = "";
     viewPlayers.slice(3).forEach((p, i) => {
       const rank = i + 4;
@@ -674,9 +624,7 @@
         <td>${rank}</td>
         <td>
           <div class="playerCell">
-            <div class="miniRing">
-              <img class="miniAv" src="${safeAvatar(p.avatar)}" alt="">
-            </div>
+            <div class="miniRing"><img class="miniAv" src="${safeAvatar(p.avatar)}" alt=""></div>
             <div class="nameSmall" title="${p.nickname}">${p.nickname}</div>
           </div>
         </td>
@@ -689,16 +637,15 @@
 
   async function loadLeaderboard(){
     try{
-      setLoadingUI();
+      statusEl.textContent = "Loading...";
       const res = await fetch("/leaderboard", { cache: "no-store" });
       if(!res.ok) throw new Error("HTTP " + res.status);
 
       const data = await res.json();
       allPlayers = Array.isArray(data) ? data : [];
 
-      statusEl.textContent = "Live (auto refresh 60s)";
+      statusEl.textContent = "LIVE • Auto refresh 60s";
       setLastUpdate();
-
       applyFilterAndSort();
     }catch(e){
       console.error(e);
@@ -707,7 +654,7 @@
       podiumEl.innerHTML = "";
       boardEl.innerHTML = "";
       emptyEl.style.display = "block";
-      emptyEl.textContent = "Could not load leaderboard. Check server and API keys.";
+      emptyEl.textContent = "Could not load leaderboard. Check server / API keys.";
     }
   }
 
