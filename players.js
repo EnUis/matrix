@@ -51,8 +51,12 @@ module.exports = [
   "DISI_666",
   "rrizli123",
   "SABABUSH2",
-  "-nitzz"
+  "-nitzz",
+  "Bandiiti",
+  "PRONTOO",
+  "Swastika-"
 ];
+
 
 
 
