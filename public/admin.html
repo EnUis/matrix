@@ -1,155 +1,434 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Matrix Admin</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>Matrix Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&display=swap" rel="stylesheet">
 
-<style>
-body {
-  margin: 0;
-  font-family: 'Orbitron', sans-serif;
-  background: radial-gradient(circle at top, #0f2027, #0f0f0f);
-  color: white;
-}
+  <style>
+    :root{
+      --bg1:#06080d;
+      --bg2:#0a0f1a;
+      --card: rgba(255,255,255,0.05);
+      --stroke: rgba(0,255,150,0.20);
+      --glow: rgba(0,255,150,0.18);
+      --accent:#00ff99;
+      --danger:#ff3c3c;
+      --muted: rgba(255,255,255,0.75);
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:'Orbitron', sans-serif;
+      color:white;
+      background:
+        radial-gradient(900px 450px at 20% -10%, rgba(0,255,153,0.18), transparent 55%),
+        radial-gradient(900px 450px at 80% 0%, rgba(0,180,255,0.12), transparent 55%),
+        linear-gradient(180deg, var(--bg2), var(--bg1));
+      min-height:100vh;
+    }
+    .wrap{
+      width:min(1100px, 94vw);
+      margin:40px auto 70px;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:18px;
+    }
+    .title{
+      font-weight:800;
+      letter-spacing:1px;
+      font-size:24px;
+      color:var(--accent);
+      text-shadow:0 0 18px var(--glow);
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--stroke);
+      box-shadow: 0 0 35px rgba(0,0,0,0.45), 0 0 40px var(--glow);
+      border-radius:16px;
+      padding:18px;
+      margin-top:16px;
+    }
+    .row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    input{
+      background:rgba(0,0,0,0.35);
+      border:1px solid rgba(255,255,255,0.14);
+      color:white;
+      padding:12px 12px;
+      border-radius:12px;
+      outline:none;
+      width:min(420px, 92vw);
+      font-family:inherit;
+    }
+    input:focus{ border-color: var(--accent); box-shadow:0 0 0 3px rgba(0,255,153,0.12);}
+    .btn{
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.12);
+      cursor:pointer;
+      font-family:inherit;
+      font-weight:800;
+      letter-spacing:0.6px;
+      background: rgba(255,255,255,0.06);
+      color:white;
+      transition: transform .06s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .btn:hover{ border-color: rgba(0,255,153,0.45); box-shadow:0 0 18px var(--glow);}
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(0,255,153,0.22), rgba(0,255,153,0.10));
+      border-color: rgba(0,255,153,0.45);
+    }
+    .btn.danger{
+      background: linear-gradient(180deg, rgba(255,60,60,0.22), rgba(255,60,60,0.10));
+      border-color: rgba(255,60,60,0.45);
+    }
+    .muted{ color: var(--muted); font-size:13px; }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap:16px;
+    }
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: 1fr; }
+    }
 
-.container {
-  width: 1000px;
-  margin: 60px auto;
-}
+    .preview{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.22);
+      margin-top:12px;
+      min-height:66px;
+    }
+    .avatar{
+      width:46px;height:46px;border-radius:50%;
+      background: rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.12);
+      object-fit:cover;
+    }
+    .pill{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      font-size:12px;
+      color: var(--muted);
+    }
 
-.card {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(0,255,150,0.2);
-  border-radius: 12px;
-  padding: 25px;
-  margin-bottom: 25px;
-  box-shadow: 0 0 30px rgba(0,255,150,0.1);
-}
+    .listhead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+      flex-wrap:wrap;
+    }
+    .players{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:10px;
+    }
+    .player{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.22);
+    }
+    .p-left{
+      display:flex;align-items:center;gap:12px;
+      min-width: 0;
+    }
+    .p-name{
+      font-weight:800;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 420px;
+    }
+    .p-meta{
+      display:flex; gap:10px; flex-wrap:wrap;
+      font-size:12px; color: var(--muted);
+      margin-top:2px;
+    }
+    .small{
+      font-size:12px;
+      color: var(--muted);
+    }
 
-h1 {
-  text-align: center;
-  color: #00ff99;
-  font-weight: 900;
-}
-
-input {
-  padding: 12px;
-  width: 350px;
-  background: #111;
-  border: 1px solid #00ff99;
-  color: white;
-}
-
-button {
-  padding: 12px 20px;
-  background: #00ff99;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-button.danger {
-  background: #ff3c3c;
-}
-
-.player-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-</style>
+    .loginBox{
+      max-width:520px;
+      margin:120px auto 0;
+    }
+    .error{
+      color:#ff8080;
+      white-space:pre-wrap;
+      font-size:12px;
+      margin-top:10px;
+    }
+    .ok{
+      color:#7dffbf;
+      white-space:pre-wrap;
+      font-size:12px;
+      margin-top:10px;
+    }
+  </style>
 </head>
+
 <body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">MATRIX ADMIN PANEL</div>
+      <button id="logoutBtn" class="btn danger" style="display:none;" onclick="logout()">LOGOUT</button>
+    </div>
 
-<div id="login" class="container">
-  <div class="card">
-    <h1>🔐 MATRIX ADMIN LOGIN</h1>
-    <input type="password" id="password" placeholder="Enter Admin Password">
-    <button onclick="login()">Login</button>
-    <p id="loginStatus"></p>
+    <!-- LOGIN -->
+    <div id="loginView" class="card loginBox">
+      <div class="row" style="justify-content:space-between;">
+        <div style="font-weight:800; font-size:18px;">🔐 Admin Login</div>
+        <div class="pill">Secure Session</div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <input id="pass" type="password" placeholder="Enter admin password" />
+        <button class="btn primary" onclick="login()">LOGIN</button>
+      </div>
+      <div id="loginMsg" class="error"></div>
+      <div class="muted" style="margin-top:10px;">
+        If you refresh, you stay logged in until session expires.
+      </div>
+    </div>
+
+    <!-- PANEL -->
+    <div id="panelView" style="display:none;">
+      <div class="grid">
+        <!-- ADD -->
+        <div class="card">
+          <div style="font-weight:800; font-size:18px;">➕ Add Player</div>
+          <div class="muted" style="margin-top:6px;">
+            Type FACEIT nickname → we store the permanent FACEIT ID (name change won’t break).
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <input id="nick" placeholder="FACEIT nickname (example: EnUis-)" />
+            <button class="btn" onclick="lookup()">PREVIEW</button>
+            <button class="btn primary" onclick="add()">ADD</button>
+          </div>
+
+          <div id="preview" class="preview">
+            <img id="prevAv" class="avatar" alt="" />
+            <div style="min-width:0;">
+              <div id="prevName" style="font-weight:800;">Preview will appear here</div>
+              <div class="p-meta">
+                <span id="prevElo" class="pill">ELO: -</span>
+                <span id="prevLvl" class="pill">LVL: -</span>
+                <span id="prevId" class="pill">ID: -</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="addMsg" class="error"></div>
+          <div id="addOk" class="ok"></div>
+        </div>
+
+        <!-- QUICK INFO -->
+        <div class="card">
+          <div style="font-weight:800; font-size:18px;">📌 Tips</div>
+          <div class="muted" style="margin-top:10px; line-height:1.7;">
+            • Make sure <b>FACEIT_API_KEY</b> is set in Environment Variables.<br>
+            • After adding, players list updates instantly.<br>
+            • Use search filter to find players fast.
+          </div>
+        </div>
+      </div>
+
+      <!-- LIST -->
+      <div class="card">
+        <div class="listhead">
+          <div style="font-weight:800; font-size:18px;">📋 Registered Players</div>
+          <div class="row">
+            <input id="filter" placeholder="Search in list..." oninput="renderFiltered()" />
+            <button class="btn" onclick="load()">REFRESH</button>
+          </div>
+        </div>
+
+        <div class="small" id="countText">Loading...</div>
+        <div id="list" class="players"></div>
+      </div>
+    </div>
   </div>
-</div>
-
-<div id="panel" class="container" style="display:none;">
-  <h1>🎮 MATRIX CONTROL PANEL</h1>
-
-  <div class="card">
-    <input id="nickname" placeholder="Faceit Nickname">
-    <button onclick="addPlayer()">Add Player</button>
-  </div>
-
-  <div class="card">
-    <h2>Registered Players</h2>
-    <div id="players"></div>
-  </div>
-
-  <button onclick="logout()">Logout</button>
-</div>
 
 <script>
-async function login() {
-  const password = document.getElementById("password").value;
+  let allPlayers = [];
 
-  const res = await fetch("/admin/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password })
-  });
+  const $ = (id) => document.getElementById(id);
 
-  const data = await res.json();
-
-  if (data.success) {
-    document.getElementById("login").style.display = "none";
-    document.getElementById("panel").style.display = "block";
-    loadPlayers();
-  } else {
-    document.getElementById("loginStatus").textContent = "Wrong password";
+  async function api(url, opts = {}) {
+    // Ensure cookies (session) are sent
+    const res = await fetch(url, { credentials: "same-origin", ...opts });
+    let data = null;
+    try { data = await res.json(); } catch {}
+    return { res, data };
   }
-}
 
-async function logout() {
-  await fetch("/admin/logout", { method: "POST" });
-  location.reload();
-}
+  async function checkSession() {
+    const { res, data } = await api("/admin/me");
+    const loggedIn = !!data?.loggedIn;
 
-async function loadPlayers() {
-  const res = await fetch("/admin/list");
-  if (res.status !== 200) return location.reload();
+    $("loginView").style.display = loggedIn ? "none" : "block";
+    $("panelView").style.display = loggedIn ? "block" : "none";
+    $("logoutBtn").style.display = loggedIn ? "inline-flex" : "none";
 
-  const players = await res.json();
-  const container = document.getElementById("players");
-  container.innerHTML = "";
+    if (loggedIn) load();
+  }
 
-  players.forEach(p => {
-    const div = document.createElement("div");
-    div.className = "player-row";
-    div.innerHTML = `
-      <span>${p.nickname} | LVL ${p.level} | ${p.elo} ELO</span>
-      <button class="danger" onclick="removePlayer('${p.id}')">Remove</button>
-    `;
-    container.appendChild(div);
-  });
-}
+  async function login() {
+    $("loginMsg").textContent = "";
+    const password = $("pass").value;
 
-async function addPlayer() {
-  const nickname = document.getElementById("nickname").value;
+    const { res, data } = await api("/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password })
+    });
 
-  await fetch("/admin/add", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nickname })
-  });
+    if (!res.ok) {
+      $("loginMsg").textContent = data?.error || "Login failed";
+      return;
+    }
 
-  loadPlayers();
-}
+    $("pass").value = "";
+    await checkSession();
+  }
 
-async function removePlayer(id) {
-  await fetch("/admin/remove/" + id, { method: "DELETE" });
-  loadPlayers();
-}
+  async function logout() {
+    await api("/admin/logout", { method: "POST" });
+    location.reload();
+  }
+
+  function setPreview(p) {
+    $("prevAv").src = p?.avatar || "";
+    $("prevName").textContent = p?.nickname || "Not found";
+    $("prevElo").textContent = "ELO: " + (p?.elo ?? "-");
+    $("prevLvl").textContent = "LVL: " + (p?.level ?? "-");
+    $("prevId").textContent = "ID: " + (p?.playerId ?? "-");
+  }
+
+  async function lookup() {
+    $("addMsg").textContent = "";
+    $("addOk").textContent = "";
+    const nickname = $("nick").value.trim();
+    if (!nickname) return $("addMsg").textContent = "Type a nickname first.";
+
+    const { res, data } = await api("/admin/lookup?nickname=" + encodeURIComponent(nickname));
+    if (!res.ok) {
+      setPreview(null);
+      $("addMsg").textContent = (data?.error || "Lookup failed") + "\n" + JSON.stringify(data?.details || {}, null, 2);
+      return;
+    }
+    setPreview(data);
+  }
+
+  async function add() {
+    $("addMsg").textContent = "";
+    $("addOk").textContent = "";
+
+    const nickname = $("nick").value.trim();
+    if (!nickname) return $("addMsg").textContent = "Type a nickname first.";
+
+    const { res, data } = await api("/admin/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nickname })
+    });
+
+    if (!res.ok) {
+      $("addMsg").textContent = (data?.error || "Add failed") + "\n" + JSON.stringify(data?.details || {}, null, 2);
+      return;
+    }
+
+    $("addOk").textContent = "✅ Added! Player ID: " + data.playerId;
+    $("nick").value = "";
+    setPreview(null);
+    await load();
+  }
+
+  async function remove(id) {
+    if (!confirm("Remove this player from leaderboard?")) return;
+    const { res, data } = await api("/admin/remove/" + encodeURIComponent(id), { method: "DELETE" });
+
+    if (!res.ok) {
+      alert("Remove failed: " + (data?.error || "Unknown"));
+      return;
+    }
+    await load();
+  }
+
+  async function load() {
+    const { res, data } = await api("/admin/list");
+    if (res.status === 401) return location.reload();
+
+    allPlayers = Array.isArray(data) ? data : [];
+    renderFiltered();
+  }
+
+  function renderFiltered() {
+    const q = $("filter").value.trim().toLowerCase();
+    const filtered = allPlayers.filter(p =>
+      (p.nickname || "").toLowerCase().includes(q) ||
+      (p.id || "").toLowerCase().includes(q)
+    );
+
+    $("countText").textContent = `${filtered.length} / ${allPlayers.length} players`;
+
+    const list = $("list");
+    list.innerHTML = "";
+
+    filtered.forEach(p => {
+      const div = document.createElement("div");
+      div.className = "player";
+
+      div.innerHTML = `
+        <div class="p-left">
+          <img class="avatar" src="${p.avatar || ""}" alt="" />
+          <div style="min-width:0;">
+            <div class="p-name">${p.nickname || "(unknown)"}</div>
+            <div class="p-meta">
+              <span class="pill">ELO: ${p.elo ?? "-"}</span>
+              <span class="pill">LVL: ${p.level ?? "-"}</span>
+              <span class="pill">ID: ${p.id}</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn danger" onclick="remove('${p.id}')">REMOVE</button>
+      `;
+
+      list.appendChild(div);
+    });
+  }
+
+  checkSession();
 </script>
-
 </body>
 </html>
