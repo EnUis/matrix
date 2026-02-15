@@ -52,6 +52,26 @@ module.exports = [
   "-nitzz",
   "Bandiiti",
   "PR0NT00",
-  "Swastika-",
-  "-eltoN"
+  "Swastika-"
 ];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
