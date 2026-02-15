@@ -5,66 +5,47 @@ const path = require("path");
 
 const app = express();
 
-// Serve frontend files
+// Serve frontend files from "public" folder
 app.use(express.static(path.join(__dirname, "public")));
 
-app.get("/", (req, res) =>
-  res.sendFile(path.join(__dirname, "public", "index.html"))
-);
+// Serve index.html at root
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
-// FACEIT API
+// Faceit API setup
 const FACEIT_API = "https://open.faceit.com/data/v4";
-const API_KEY = process.env.FACEIT_API_KEY; // IMPORTANT: set in Render env variables
+const API_KEY = "a68f9584-e988-4c48-a164-5fe3a2796bc2"; // your real key here
 
-if (!API_KEY) {
-  console.error("❌ FACEIT_API_KEY is not set in environment variables");
-  process.exit(1);
-}
-
-// Leaderboard route
+// Leaderboard API route
 app.get("/leaderboard", async (req, res) => {
-  try {
-    const requests = players.map((playerId) =>
-      axios.get(`${FACEIT_API}/players/${playerId}`, {
+  const results = [];
+
+  for (const name of players) {
+    try {
+      const encoded = encodeURIComponent(name);
+      const response = await axios.get(`${FACEIT_API}/players?nickname=${encoded}`, {
         headers: { Authorization: `Bearer ${API_KEY}` }
-      }).catch(err => {
-        console.warn("Skipping:", playerId);
-        return null;
-      })
-    );
+      });
 
-    const responses = await Promise.all(requests);
+      const p = response.data;
+      const cs2 = p.games?.cs2;
+      if (!cs2) continue;
 
-    const results = responses
-      .filter(r => r && r.data)
-      .map(r => {
-        const p = r.data;
-        const cs2 = p.games?.cs2;
-
-        if (!cs2) return null;
-
-        return {
-          nickname: p.nickname, // always latest name
-          avatar: p.avatar || "https://via.placeholder.com/36",
-          elo: cs2.faceit_elo,
-          level: cs2.skill_level
-        };
-      })
-      .filter(Boolean);
-
-    results.sort((a, b) => b.elo - a.elo);
-
-    res.json(results);
-
-  } catch (error) {
-    console.error("Leaderboard error:", error.message);
-    res.status(500).json({ error: "Failed to load leaderboard" });
+      results.push({
+        nickname: p.nickname,
+        avatar: p.avatar || "https://via.placeholder.com/36",
+        elo: cs2.faceit_elo,
+        level: cs2.skill_level
+      });
+    } catch (err) {
+      console.warn("Skipping:", name, "-", err.message);
+    }
   }
+
+  // Sort by ELO descending
+  results.sort((a, b) => b.elo - a.elo);
+  res.json(results);
 });
 
-// Port for Render / Railway
+// Dynamic port for Render or fallback to 3000
 const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () =>
-  console.log(`✅ Backend running on port ${PORT}`)
-);
+app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
