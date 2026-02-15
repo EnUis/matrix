@@ -45,8 +45,15 @@ module.exports = [
   "olsyy",
   "IGNwanted",
   "PreshevaAK",
-  "PRINCLEKA"
+  "PRINCLEKA",
+  "erdi18",
+  "Anarki999",
+  "DISI_666",
+  "rrizli123",
+  "SABABUSH2",
+  "-nitzz"
 ];
+
 
 
 
