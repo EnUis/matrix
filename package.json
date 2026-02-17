@@ -11,6 +11,7 @@
     "cors": "^2.8.5",
     "express": "^4.22.1",
     "express-session": "^1.19.0",
-    "mongoose": "^9.2.1"
+    "mongoose": "^9.2.1",
+    "dotenv": "^16.4.5"
   }
 }

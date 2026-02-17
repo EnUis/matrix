@@ -2,199 +2,103 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>FACEIT Leaderboard</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Matrix • CS2 Leaderboard</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Added styles for top-3 layout (updated: wider cards, align with table width) -->
-  <style>
-    /* top-three container: center and match table width */
-    .top-three {
-      display: flex;
-      gap: 16px;
-      margin: 22px auto;
-      justify-content: space-between;
-      flex-wrap: nowrap;
-      width: 100%;
-      max-width: 980px; /* aligns with main table width */
-      box-sizing: border-box;
-      padding: 0 8px;
-    }
-
-    .top-card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-      padding: 20px;
-      width: calc((100% - 32px) / 3); /* three equal columns */
-      min-width: 240px;
-      text-align: center;
-      border-radius: 10px;
-      box-shadow: 0 8px 22px rgba(0,0,0,0.35);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .top-card .rank {
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 800;
-      font-size: 24px;
-      color: #ffd700;
-    }
-    .top-card .player {
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: 0.6px;
-    }
-    .top-card .meta {
-      display: flex;
-      gap: 14px;
-      font-size: 15px;
-      opacity: 0.95;
-    }
-
-    /* emphasize best player slightly */
-    .top-card:first-child { transform: scale(1.06); }
-
-    @media (max-width: 1000px) {
-      .top-three { max-width: 840px; }
-      .top-card { min-width: 220px; width: calc((100% - 32px) / 3); }
-    }
-    @media (max-width: 800px){
-      .top-three { flex-wrap: wrap; gap: 12px; max-width: 720px; padding: 0 6px; }
-      .top-card { width: 48%; min-width: 0; }
-    }
-    @media (max-width:480px){
-      .top-card { width: 100%; }
-    }
-
-    /* make table sit neatly under top-three */
-    .card { margin-top: 8px; }
-    .card table thead th { text-transform: uppercase; font-size:12px; }
-    .card table tbody td { padding: 10px 8px; }
-  </style>
+  <link rel="stylesheet" href="ui.css" />
+  <link rel="stylesheet" href="leaderboard.css" />
 </head>
+
 <body>
+  <header class="topbar" aria-label="Site header">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <img src="logo.png" alt="Matrix logo" class="logo" />
+        <div class="titleWrap">
+          <div class="site-title">MATRIX</div>
+          <div class="subtitle">FACEIT CS2 ELO • auto refresh 30s</div>
+        </div>
+      </div>
 
-<!-- Site header: replace frontend/logo.png with your logo file (or update the src) -->
-<header class="site-header" aria-label="Site header">
-  <div class="header-inner">
-    <img src="logo.png" alt="Site logo" class="site-logo" />
-    <div class="site-title">FACEIT ELO</div>
-  </div>
-</header>
+      <div class="row" style="gap:10px;">
+        <button id="refreshBtn" class="btn primary" type="button">Refresh</button>
+        <a class="btn ghost" href="/admin">Admin</a>
+      </div>
+    </div>
+  </header>
 
-<div class="bg-glow"></div>
+  <main class="container main">
+    <section class="card controls" aria-label="Controls">
+      <div class="left">
+        <div class="control">
+          <input id="search" class="input" type="search" autocomplete="off"
+                 placeholder="Search nickname or player ID…" />
+        </div>
 
-<div class="container">
-  <h1>MATRIX LEADERBOARD</h1>
-  <p id="status" class="status">Loading...</p>
+        <div class="control" style="max-width:260px;">
+          <select id="sort" class="select" aria-label="Sort">
+            <option value="elo_desc">Sort: ELO (high → low)</option>
+            <option value="elo_asc">Sort: ELO (low → high)</option>
+            <option value="name_asc">Sort: Name (A → Z)</option>
+            <option value="name_desc">Sort: Name (Z → A)</option>
+            <option value="level_desc">Sort: Level (high → low)</option>
+            <option value="level_asc">Sort: Level (low → high)</option>
+          </select>
+        </div>
 
-  <!-- New top-3 horizontal container -->
-  <div id="topThree" class="top-three" aria-hidden="true">
-    <!-- cards will be injected from the small script below when #board rows appear -->
-  </div>
+        <div class="control" style="max-width:200px;">
+          <select id="level" class="select" aria-label="Level filter">
+            <option value="all">Level: All</option>
+            <option value="10">Level: 10</option>
+            <option value="9">Level: 9</option>
+            <option value="8">Level: 8</option>
+            <option value="7">Level: 7</option>
+            <option value="6">Level: 6</option>
+            <option value="5">Level: 5</option>
+            <option value="4">Level: 4</option>
+            <option value="3">Level: 3</option>
+            <option value="2">Level: 2</option>
+            <option value="1">Level: 1</option>
+          </select>
+        </div>
+      </div>
 
-  <div class="card">
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>PLAYER</th>
-          <th>LEVEL</th>
-          <th>ELO</th>
-        </tr>
-      </thead>
-      <tbody id="board"></tbody>
-    </table>
-  </div>
-</div>
+      <div class="right">
+        <span id="countPill" class="pill good">—</span>
+        <span id="updatedAt" class="pill">Updated: —</span>
+      </div>
+    </section>
 
-<script src="app.js"></script>
+    <div id="status" class="status" role="status"></div>
 
-<!-- Script: move first 3 rows into topThree once rows are populated -->
-<script>
-  (function(){
-    const board = document.getElementById('board');
-    const topThree = document.getElementById('topThree');
-    if(!board || !topThree) return;
+    <!-- kept for JS compatibility, but hidden via CSS -->
+    <div id="podiumWrap" aria-hidden="true">
+      <div id="podium"></div>
+    </div>
 
-    function getNameFromRow(tr){
-      return (tr.children[1]?.textContent || '').trim();
-    }
+    <section class="card tableWrap" aria-label="Leaderboard">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="col-rank">#</th>
+            <th>Player</th>
+            <th class="right">Level</th>
+            <th class="right">ELO</th>
+          </tr>
+        </thead>
+        <tbody id="board"></tbody>
+      </table>
+    </section>
 
-    function createCardFromRow(tr, rankFallback){
-      const cols = tr.children;
-      const rank = cols[0]?.textContent?.trim() || rankFallback;
-      const nameHTML = cols[1]?.innerHTML || '';
-      const level = cols[2]?.textContent?.trim() || '';
-      const elo = cols[3]?.textContent?.trim() || '';
-      const div = document.createElement('div');
-      div.className = 'top-card';
-      div.innerHTML = '<div class="rank">#' + rank + '</div>'
-                    + '<div class="player">' + nameHTML + '</div>'
-                    + '<div class="meta"><span class="level">' + level + '</span><span class="elo">' + elo + '</span></div>';
-      return div;
-    }
+    <div class="muted" style="margin-top:12px; font-size:12.5px;">
+      Tip: Add players in Admin. The list is stored in MongoDB; ELO updates from FACEIT.
+    </div>
+  </main>
 
-    function renumber(){
-      Array.from(board.querySelectorAll('tr')).forEach((tr, idx) => {
-        const firstTd = tr.querySelector('td');
-        if(firstTd) firstTd.textContent = idx + 4;
-      });
-    }
-
-    function moveTopThreeIfNeeded(){
-      // if we already have top cards, nothing to move
-      if(topThree.children.length > 0) return false;
-
-      const rows = Array.from(board.querySelectorAll('tr'));
-      if(rows.length < 3) return false;
-
-      // move first three rows into topThree
-      for(let i=0;i<3;i++){
-        const tr = rows[i];
-        topThree.appendChild(createCardFromRow(tr, i+1));
-        tr.remove();
-      }
-      renumber();
-      topThree.setAttribute('aria-hidden','false');
-      return true;
-    }
-
-    function removeDuplicateRowsWhenCardsExist(){
-      if(topThree.children.length === 0) return;
-      const topNames = Array.from(topThree.querySelectorAll('.player')).map(el => el.textContent.trim());
-      let removed = false;
-      Array.from(board.querySelectorAll('tr')).forEach(tr => {
-        const rankText = tr.querySelector('td')?.textContent?.trim();
-        const rankNum = parseInt(rankText, 10);
-        const name = getNameFromRow(tr);
-        if((rankNum && rankNum <= 3) || topNames.includes(name)){
-          tr.remove();
-          removed = true;
-        }
-      });
-      if(removed) renumber();
-    }
-
-    function sync(){
-      // try to create top cards if none exist
-      if(!moveTopThreeIfNeeded()){
-        // if cards already exist, ensure table doesn't contain duplicates
-        removeDuplicateRowsWhenCardsExist();
-      }
-    }
-
-    // initial sync and keep observing for changes (refreshes/updates)
-    sync();
-    const obs = new MutationObserver(sync);
-    obs.observe(board, { childList: true, subtree: true });
-  })();
-</script>
-
+  <script src="app.js"></script>
 </body>
 </html>

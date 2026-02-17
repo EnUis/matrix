@@ -1,12 +1,29 @@
+require("dotenv").config();
+
+// Fix for some networks/DNS providers that block SRV lookups used by mongodb+srv://
+// You can override with DNS_SERVERS="x.x.x.x,y.y.y.y" in .env if needed.
+const dns = require("dns");
+try {
+  const dnsServers = (process.env.DNS_SERVERS || "1.1.1.1,8.8.8.8")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (dnsServers.length) dns.setServers(dnsServers);
+} catch (e) {
+  // ignore
+}
+
+
 const express = require("express");
 const axios = require("axios");
 const path = require("path");
 const mongoose = require("mongoose");
 const session = require("express-session");
-const MongoStore = require("connect-mongo");
+const { MongoStore } = require("connect-mongo");
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // ============================
 // CONFIG
@@ -15,30 +32,30 @@ const FACEIT_API = "https://open.faceit.com/data/v4";
 const API_KEY = process.env.FACEIT_API_KEY;
 const MONGODB_URI = process.env.MONGODB_URI;
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "MatrixAdmin123";
+const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || process.env.ADMIN_PASS || "MatrixAdmin123").trim();
 const SESSION_SECRET = process.env.SESSION_SECRET || "change_this_session_secret";
+
+// caching / perf
+const CACHE_TTL_MS = Number(process.env.CACHE_TTL_MS || 25_000); // player profile cache TTL
+const CONCURRENCY = Math.max(1, Math.min(10, Number(process.env.FACEIT_CONCURRENCY || 5)));
 
 // ============================
 // DB MODEL
 // ============================
 const playerSchema = new mongoose.Schema(
-  { playerId: { type: String, required: true, unique: true, index: true } },
+  {
+    playerId: { type: String, required: true, unique: true, index: true },
+    addedNickname: { type: String, default: null }
+  },
   { timestamps: true }
 );
 const Player = mongoose.model("Player", playerSchema);
 
-function ensureEnv(res) {
+function requireApiKey(res) {
   if (!API_KEY) {
     res.status(500).json({
       error: "FACEIT_API_KEY missing",
-      hint: "Set FACEIT_API_KEY in env vars and restart."
-    });
-    return false;
-  }
-  if (!MONGODB_URI) {
-    res.status(500).json({
-      error: "MONGODB_URI missing",
-      hint: "Set MONGODB_URI in env vars and restart."
+      hint: "Create an API key on FACEIT and set FACEIT_API_KEY in your .env / environment variables."
     });
     return false;
   }
@@ -50,9 +67,77 @@ function requireAuth(req, res, next) {
   next();
 }
 
+function isUuidLike(s) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+}
+
+// ============================
+// FACEIT CACHE + CONCURRENCY
+// ============================
+const playerCache = new Map(); // playerId -> { ts, payload }
+
+async function fetchFaceitPlayerById(playerId) {
+  const now = Date.now();
+  const cached = playerCache.get(playerId);
+  if (cached && now - cached.ts < CACHE_TTL_MS) return cached.payload;
+
+  const r = await axios.get(`${FACEIT_API}/players/${playerId}`, {
+    headers: { Authorization: `Bearer ${API_KEY}` }
+  });
+
+  playerCache.set(playerId, { ts: now, payload: r.data });
+  return r.data;
+}
+
+async function fetchFaceitPlayerByNickname(nickname) {
+  const r = await axios.get(
+    `${FACEIT_API}/players?nickname=${encodeURIComponent(nickname)}`,
+    { headers: { Authorization: `Bearer ${API_KEY}` } }
+  );
+  return r.data;
+}
+
+async function mapWithConcurrency(items, limit, worker) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+
+  async function runOne() {
+    while (true) {
+      const i = nextIndex++;
+      if (i >= items.length) return;
+      try {
+        results[i] = await worker(items[i], i);
+      } catch (e) {
+        results[i] = { __error: true, error: e };
+      }
+    }
+  }
+
+  const workers = Array.from({ length: Math.min(limit, items.length) }, runOne);
+  await Promise.all(workers);
+  return results;
+}
+
+function normalizeLeaderboardEntry(playerId, p) {
+  const cs2 = p.games?.cs2;
+  if (!cs2) return null;
+
+  return {
+    id: playerId,
+    nickname: p.nickname,
+    avatar: p.avatar || "https://via.placeholder.com/64",
+    elo: cs2.faceit_elo,
+    level: cs2.skill_level
+  };
+}
+
+// ============================
+// STARTUP
+// ============================
 async function start() {
   if (!MONGODB_URI) {
     console.error("❌ MONGODB_URI missing");
+    console.error("   Tip: Use MongoDB Atlas (free) or local MongoDB and set MONGODB_URI in env vars.");
     process.exit(1);
   }
 
@@ -82,18 +167,43 @@ async function start() {
   // STATIC
   // ============================
   app.use(express.static(path.join(__dirname, "public")));
-  app.get("/", (req, res) =>
-    res.sendFile(path.join(__dirname, "public", "index.html"))
-  );
+  app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
+  app.get("/admin", (req, res) => res.redirect("/admin.html"));
 
   // ============================
-  // AUTH ROUTES (for your admin.html)
+  // HEALTH
+  // ============================
+  app.get("/health", async (_req, res) => {
+    const count = await Player.countDocuments();
+    res.json({
+      ok: true,
+      db: "mongo",
+      playerCount: count,
+      cacheTtlMs: CACHE_TTL_MS,
+      concurrency: CONCURRENCY,
+      hasApiKey: !!API_KEY
+    });
+  });
+
+  // ============================
+  // ADMIN CONFIG (no secrets)
+  // ============================
+  app.get("/admin/config", (_req, res) => {
+    res.json({
+      hasAdminPassword: !!process.env.ADMIN_PASSWORD || !!process.env.ADMIN_PASS,
+      sessionCookie: "matrix_admin",
+      sessionMaxAgeHours: 12
+    });
+  });
+
+  // ============================
+  // AUTH ROUTES (admin.html)
   // ============================
   app.get("/admin/me", (req, res) => res.json({ loggedIn: !!req.session?.admin }));
 
   app.post("/admin/login", (req, res) => {
-    const password = String(req.body?.password || "");
-    if (password !== ADMIN_PASSWORD) return res.status(401).json({ error: "Wrong password" });
+    const password = String(req.body?.password || "").trim();
+    if (!password || password !== ADMIN_PASSWORD) return res.status(401).json({ error: "Login failed" });
 
     req.session.admin = true;
     res.json({ success: true });
@@ -105,91 +215,63 @@ async function start() {
 
   // ============================
   // LEADERBOARD (READ IDs FROM DB)
+  // returns: { updatedAt, players: [...] }
   // ============================
   app.get("/leaderboard", async (req, res) => {
-    if (!ensureEnv(res)) return;
+    if (!requireApiKey(res)) return;
 
-    const ids = await Player.find({}, { playerId: 1, _id: 0 }).lean();
-    const results = [];
+    const rows = await Player.find({}, { playerId: 1, _id: 0 }).lean();
+    const ids = [...new Set(rows.map((r) => r.playerId).filter(Boolean))];
 
-    for (const row of ids) {
-      const playerId = row.playerId;
-      try {
-        const r = await axios.get(`${FACEIT_API}/players/${playerId}`, {
-          headers: { Authorization: `Bearer ${API_KEY}` }
-        });
+    const fetched = await mapWithConcurrency(ids, CONCURRENCY, async (playerId) => {
+      const p = await fetchFaceitPlayerById(playerId);
+      return normalizeLeaderboardEntry(playerId, p);
+    });
 
-        const p = r.data;
-        const cs2 = p.games?.cs2;
-        if (!cs2) continue;
+    const players = fetched.filter((x) => x && !x.__error);
+    players.sort((a, b) => (b.elo ?? -1) - (a.elo ?? -1));
 
-        results.push({
-          id: playerId,
-          nickname: p.nickname,
-          avatar: p.avatar || "https://via.placeholder.com/36",
-          elo: cs2.faceit_elo,
-          level: cs2.skill_level
-        });
-      } catch {
-        // skip
-      }
-    }
-
-    results.sort((a, b) => b.elo - a.elo);
-    res.json(results);
+    res.json({ updatedAt: new Date().toISOString(), players });
   });
 
   // ============================
-  // ADMIN LIST (for your admin.html)
+  // ADMIN LIST
   // ============================
   app.get("/admin/list", requireAuth, async (req, res) => {
-    if (!ensureEnv(res)) return;
+    if (!requireApiKey(res)) return;
 
-    const ids = await Player.find({}, { playerId: 1, _id: 0 }).lean();
-    const list = [];
+    const rows = await Player.find({}, { playerId: 1, _id: 0 }).lean();
+    const ids = [...new Set(rows.map((r) => r.playerId).filter(Boolean))];
 
-    for (const row of ids) {
-      const playerId = row.playerId;
-      try {
-        const r = await axios.get(`${FACEIT_API}/players/${playerId}`, {
-          headers: { Authorization: `Bearer ${API_KEY}` }
-        });
+    const fetched = await mapWithConcurrency(ids, CONCURRENCY, async (playerId) => {
+      const p = await fetchFaceitPlayerById(playerId);
+      const cs2 = p.games?.cs2;
 
-        const p = r.data;
-        const cs2 = p.games?.cs2;
+      return {
+        id: playerId,
+        nickname: p.nickname,
+        avatar: p.avatar || "",
+        elo: cs2?.faceit_elo ?? null,
+        level: cs2?.skill_level ?? null
+      };
+    });
 
-        list.push({
-          id: playerId,
-          nickname: p.nickname,
-          avatar: p.avatar || "",
-          elo: cs2?.faceit_elo ?? null,
-          level: cs2?.skill_level ?? null
-        });
-      } catch {
-        list.push({ id: playerId, nickname: "(failed to load)", avatar: "", elo: null, level: null });
-      }
-    }
-
+    const list = fetched.filter((x) => x && !x.__error);
     list.sort((a, b) => (b.elo ?? -1) - (a.elo ?? -1));
     res.json(list);
   });
 
   // ============================
-  // ADMIN LOOKUP PREVIEW
+  // ADMIN LOOKUP PREVIEW (nickname -> basic info)
   // ============================
   app.get("/admin/lookup", requireAuth, async (req, res) => {
-    if (!ensureEnv(res)) return;
+    if (!requireApiKey(res)) return;
 
     const nickname = String(req.query.nickname || "").trim();
     if (!nickname) return res.status(400).json({ error: "Nickname required" });
 
     try {
-      const r = await axios.get(
-        `${FACEIT_API}/players?nickname=${encodeURIComponent(nickname)}`,
-        { headers: { Authorization: `Bearer ${API_KEY}` } }
-      );
-
-      const p = r.data;
+      const p = await fetchFaceitPlayerByNickname(nickname);
       const cs2 = p.games?.cs2;
 
       res.json({
@@ -207,25 +289,34 @@ async function start() {
   });
 
   // ============================
-  // ADMIN ADD (stores into DB)
+  // ADMIN ADD
+  // Accepts:
+  //  - { input: "nickname" } OR { nickname: "..." }
+  //  - { input: "<playerId-uuid>" } OR { playerId: "..." }
   // ============================
   app.post("/admin/add", requireAuth, async (req, res) => {
-    if (!ensureEnv(res)) return;
+    if (!requireApiKey(res)) return;
 
-    const nickname = String(req.body?.nickname || "").trim();
-    if (!nickname) return res.status(400).json({ error: "Nickname required" });
+    const input = String(req.body?.input || req.body?.nickname || req.body?.playerId || "").trim();
+    if (!input) return res.status(400).json({ error: "Nickname or playerId required" });
 
     try {
-      const r = await axios.get(
-        `${FACEIT_API}/players?nickname=${encodeURIComponent(nickname)}`,
-        { headers: { Authorization: `Bearer ${API_KEY}` } }
-      );
+      let playerId = null;
+      let addedNickname = null;
 
-      const playerId = r.data.player_id;
+      if (isUuidLike(input)) {
+        playerId = input;
+        const p = await fetchFaceitPlayerById(playerId); // validate + cache
+        addedNickname = p.nickname || null;
+      } else {
+        const p = await fetchFaceitPlayerByNickname(input);
+        playerId = p.player_id;
+        addedNickname = input;
+      }
 
       await Player.updateOne(
         { playerId },
-        { $setOnInsert: { playerId } },
+        { $setOnInsert: { playerId, addedNickname } },
         { upsert: true }
       );
 
@@ -238,7 +329,7 @@ async function start() {
   });
 
   // ============================
-  // ADMIN REMOVE (deletes from DB)
+  // ADMIN REMOVE
   // ============================
   app.delete("/admin/remove/:id", requireAuth, async (req, res) => {
     const playerId = String(req.params.id || "").trim();
