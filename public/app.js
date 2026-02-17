@@ -32,14 +32,14 @@ function asNum(v) {
 }
 
 function render(players) {
-  const q = (els.search.value || "").trim().toLowerCase();
+  const q = els.search ? (els.search.value || "").trim().toLowerCase() : "";
 
   const filtered = q
     ? players.filter((p) => (p.nickname || "").toLowerCase().includes(q))
     : players;
 
-  els.count.textContent = `${filtered.length} player${filtered.length === 1 ? "" : "s"}`;
-  els.updated.textContent = `Updated ${fmtTime(lastUpdatedAt)}`;
+  if (els.count) els.count.textContent = `${filtered.length} player${filtered.length === 1 ? "" : "s"}`;
+  if (els.updated) els.updated.textContent = `Updated ${fmtTime(lastUpdatedAt)}`;
 
   // Top 3 strip
   const top = filtered.slice(0, 3);
@@ -110,8 +110,8 @@ async function load() {
   if (loading) return;
   loading = true;
 
-  els.status.textContent = "Loading…";
-  els.refreshBtn.disabled = true;
+  if (els.status) els.status.textContent = "Loading…";
+  if (els.refreshBtn) els.refreshBtn.disabled = true;
 
   try {
     const r = await fetch("/leaderboard", { cache: "no-store" });
@@ -130,17 +130,17 @@ async function load() {
       .sort((a, b) => b.elo - a.elo);
 
     render(allPlayers);
-    els.status.textContent = "";
+    if (els.status) els.status.textContent = "";
   } catch (e) {
-    els.status.textContent = "Failed to load leaderboard. Try Refresh.";
+    if (els.status) els.status.textContent = "Failed to load leaderboard. Try Refresh.";
   } finally {
-    els.refreshBtn.disabled = false;
+    if (els.refreshBtn) els.refreshBtn.disabled = false;
     loading = false;
   }
 }
 
-els.search.addEventListener("input", () => render(allPlayers));
-els.refreshBtn.addEventListener("click", load);
+if (els.search) els.search.addEventListener("input", () => render(allPlayers));
+if (els.refreshBtn) els.refreshBtn.addEventListener("click", load);
 
 load();
 setInterval(load, 30_000);

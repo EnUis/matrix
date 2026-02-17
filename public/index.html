@@ -32,14 +32,12 @@
 
   <main class="wrap">
     <section class="panel">
-      <div class="panel__row">
-        <input id="search" class="input" type="search" placeholder="Search player…" autocomplete="off" />
-        <div class="meta">
-          <span id="count" class="pill">0 players</span>
-          <span id="updated" class="pill pill--soft">Updated —</span>
-        </div>
+      <div id="top3" class="top3 tv-top3" aria-label="Top 3 players"></div>
+
+      <div class="tvmeta" aria-label="Meta">
+        <span id="count" class="tvmeta__item">0 players</span>
+        <span id="updated" class="tvmeta__item">Updated —</span>
       </div>
-      <div id="top3" class="top3" aria-label="Top 3 players"></div>
 
       <div class="table">
         <div class="table__head">
@@ -53,7 +51,7 @@
       </div>
 
       <div id="status" class="status">Loading…</div>
-    </section>
+</section>
 
     <footer class="foot">
       Auto refresh every 30s • Built for FACEIT CS2
