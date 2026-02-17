@@ -1,4 +1,4 @@
-# Matrix FACEIT Leaderboard (with Admin + Database)
+# FACEIT Leaderboard (with Admin + Database)
 
 This project shows a FACEIT CS2 ELO leaderboard and includes an admin panel where you can add/remove players.
 Player IDs are stored in MongoDB, so anything you add in Admin stays saved.
@@ -37,4 +37,4 @@ npm start
 ## Notes
 - The server caches FACEIT player profiles in-memory for a short time to reduce API calls.
 - The admin session is stored in MongoDB (connect-mongo).
-- Default admin password is `MatrixAdmin123` if you don't set `ADMIN_PASSWORD` (change it!).
+- Default admin password is `Admin123` if you don't set `ADMIN_PASSWORD` (change it!).
