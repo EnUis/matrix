@@ -1,280 +1,104 @@
-/* Matrix Leaderboard UI */
+/* Matrix Leaderboard (fresh rebuild) */
+const $ = (id) => document.getElementById(id);
 
 const els = {
-  status: document.getElementById("status"),
-  updatedAt: document.getElementById("updatedAt"),
-  countPill: document.getElementById("countPill"),
-  board: document.getElementById("board"),
-  podiumWrap: document.getElementById("podiumWrap"),
-  podium: document.getElementById("podium"),
-  search: document.getElementById("search"),
-  sort: document.getElementById("sort"),
-  level: document.getElementById("level"),
-  refreshBtn: document.getElementById("refreshBtn")
+  rows: $("rows"),
+  status: $("status"),
+  search: $("search"),
+  count: $("count"),
+  updated: $("updated"),
+  refreshBtn: $("refreshBtn")
 };
 
-const state = {
-  players: [],
-  updatedAt: null,
-  loading: false,
-  lastError: null
-};
+let allPlayers = [];
+let lastUpdatedAt = null;
+let loading = false;
 
-// Persist UI preferences
-const STORAGE_KEY = "matrix_lb_prefs_v2";
-function loadPrefs(){
-  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") || {}; }catch{ return {}; }
-}
-function savePrefs(partial){
-  const cur = loadPrefs();
-  const next = { ...cur, ...partial };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-}
-
-function applyPrefs(){
-  const p = loadPrefs();
-  if (els.search && typeof p.q === "string") els.search.value = p.q;
-  if (els.sort && typeof p.sort === "string") els.sort.value = p.sort;
-  if (els.level && typeof p.level === "string") els.level.value = p.level;
+function fmtTime(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString();
 }
 
 function safeText(s) {
-  return String(s ?? "");
+  return String(s ?? "").replace(/[\u0000-\u001F\u007F]/g, "");
 }
 
-function formatUpdatedAt(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return `Last update: ${d.toLocaleString()}`;
-}
+function render(players) {
+  const q = (els.search.value || "").trim().toLowerCase();
+  const filtered = q
+    ? players.filter((p) => (p.nickname || "").toLowerCase().includes(q))
+    : players;
 
-function computeEloRanks(players) {
-  const byElo = [...players].sort((a, b) => (b.elo ?? -1) - (a.elo ?? -1));
-  const rankById = new Map();
-  byElo.forEach((p, i) => rankById.set(p.id, i + 1));
-  return players.map((p) => ({ ...p, eloRank: rankById.get(p.id) || null }));
-}
+  els.count.textContent = `${filtered.length} player${filtered.length === 1 ? "" : "s"}`;
+  els.updated.textContent = `Updated ${fmtTime(lastUpdatedAt)}`;
 
-function compare(a, b, mode) {
-  const an = (a.nickname || "").toLowerCase();
-  const bn = (b.nickname || "").toLowerCase();
-
-  switch (mode) {
-    case "elo_asc":
-      return (a.elo ?? -1) - (b.elo ?? -1);
-    case "name_asc":
-      return an.localeCompare(bn);
-    case "name_desc":
-      return bn.localeCompare(an);
-    case "level_desc":
-      return (b.level ?? -1) - (a.level ?? -1);
-    case "level_asc":
-      return (a.level ?? -1) - (b.level ?? -1);
-    case "elo_desc":
-    default:
-      return (b.elo ?? -1) - (a.elo ?? -1);
-  }
-}
-
-function filteredAndSortedPlayers() {
-  const q = (els.search?.value || "").trim().toLowerCase();
-  const lvl = els.level?.value || "all";
-  const sortMode = els.sort?.value || "elo_desc";
-
-  let out = state.players;
-
-  if (lvl !== "all") {
-    const want = Number(lvl);
-    out = out.filter((p) => Number(p.level) === want);
+  if (!filtered.length) {
+    els.rows.innerHTML = `<div class="empty">No players found.</div>`;
+    return;
   }
 
-  if (q) {
-    out = out.filter((p) => {
-      const name = (p.nickname || "").toLowerCase();
-      const id = (p.id || "").toLowerCase();
-      return name.includes(q) || id.includes(q);
-    });
-  }
+  const html = filtered
+    .map((p, idx) => {
+      const rank = idx + 1;
+      const nick = safeText(p.nickname || "Unknown");
+      const avatar = safeText(p.avatar || "");
+      const lvl = p.level ?? "—";
+      const elo = p.elo ?? "—";
 
-  out = [...out].sort((a, b) => compare(a, b, sortMode));
-  return { q, lvl, sortMode, out };
-}
-
-function medalLabel(rank) {
-  if (rank === 1) return "CHAMP";
-  if (rank === 2) return "2ND";
-  if (rank === 3) return "3RD";
-  return `#${rank}`;
-}
-
-function podiumCard(player) {
-  const rank = player.eloRank || 0;
-
-  const card = document.createElement("div");
-  card.className = `pod-card ${rank === 1 ? "champ" : ""}`;
-
-  card.innerHTML = `
-    <div class="pod-top">
-      <div class="badge">${medalLabel(rank)}</div>
-      <div class="pill small">LVL ${safeText(player.level)}</div>
-    </div>
-
-    <div class="pod-player">
-      <img src="${safeText(player.avatar)}" alt="" loading="lazy" />
-      <div class="pod-meta">
-        <div class="pname" title="${safeText(player.nickname)}">${safeText(player.nickname)}</div>
-        <div class="muted small">ELO ${safeText(player.elo)}</div>
-      </div>
-    </div>
-  `;
-
-  return card;
-}
-
-function tableRow(player) {
-  const tr = document.createElement("tr");
-
-  const rank = player.eloRank ?? "-";
-
-  tr.innerHTML = `
-    <td class="col-rank"><span class="rank">${safeText(rank)}</span></td>
-    <td>
-      <div class="playerCell">
-        <img src="${safeText(player.avatar)}" alt="" loading="lazy" />
-        <div class="pwrap">
-          <div class="pname" title="${safeText(player.nickname)}">${safeText(player.nickname)}</div>
-        </div>
-      </div>
-    </td>
-    <td class="right"><span class="pill small">LVL ${safeText(player.level)}</span></td>
-    <td class="right"><span class="elo">${safeText(player.elo)}</span></td>
-  `;
-
-  return tr;
-}
-}
-
-function renderSkeleton(rows = 10) {
-  if (!els.board) return;
-  els.board.innerHTML = "";
-  for (let i = 0; i < rows; i++) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="col-rank"><div class="skel" style="height:14px; width:32px;"></div></td>
-      <td>
-        <div class="playerCell">
-          <div class="skel" style="height:44px; width:44px;"></div>
-          <div style="flex:1; min-width:0;">
-            <div class="skel" style="height:14px; width:48%; margin-bottom:8px;"></div>
-            <div class="skel" style="height:12px; width:72%;"></div>
+      return `
+        <div class="row" role="row">
+          <div class="rank" role="cell">${rank}</div>
+          <div class="player" role="cell">
+            <img class="avatar" src="${avatar}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"/>
+            <div class="nick" title="${nick}">${nick}</div>
           </div>
+          <div class="right" role="cell">
+            <span class="badge badge--lvl">LVL ${lvl}</span>
+          </div>
+          <div class="right elo" role="cell">${elo}</div>
         </div>
-      </td>
-      <td class="right"><div class="skel" style="height:14px; width:70px; margin-left:auto;"></div></td>
-      <td class="right"><div class="skel" style="height:14px; width:70px; margin-left:auto;"></div></td>
-    `;
-    els.board.appendChild(tr);
-  }
-}
-function render() {
-  if (!els.board) return;
+      `;
+    })
+    .join("");
 
-  // meta
-  const { q, lvl, sortMode, out } = filteredAndSortedPlayers();
-
-  const total = state.players.length;
-  const filtered = out.length;
-  els.countPill.textContent = q || (lvl !== "all") ? `${filtered} / ${total} players` : `${total} players`;
-  els.countPill.classList.toggle("bad", !!state.lastError);
-  els.countPill.classList.toggle("good", !state.lastError);
-  els.updatedAt.textContent = formatUpdatedAt(state.updatedAt);
-
-  // podium only when "normal view"
-  // Simplified UI: always show full table (including #1, #2, #3) and hide podium
-const showPodium = false;
-if (els.podiumWrap) els.podiumWrap.style.display = "none";
-// (Podium rendering disabled intentionally for a cleaner look)
-
-// table
-const list = out;
-
-  els.board.innerHTML = "";
-  const frag = document.createDocumentFragment();
-
-  if (!list.length) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td colspan="4" class="empty">No players found.</td>`;
-    frag.appendChild(tr);
-  } else {
-    list.forEach((p) => frag.appendChild(tableRow(p)));
-  }
-
-  els.board.appendChild(frag);
+  els.rows.innerHTML = html;
 }
 
-async function loadLeaderboard({ silent = false } = {}) {
-  if (state.loading) return;
-  state.loading = true;
+async function load() {
+  if (loading) return;
+  loading = true;
 
-  if (els.refreshBtn) {
-    els.refreshBtn.disabled = true;
-    els.refreshBtn.textContent = "Refreshing…";
-  }
-
-  if (!silent) {
-    els.status.textContent = "Loading…";
-    els.status.classList.remove("error");
-    renderSkeleton(10);
-  }
+  els.status.textContent = "Loading…";
+  els.refreshBtn.disabled = true;
 
   try {
-    const res = await fetch("/leaderboard", { cache: "no-store" });
-    const data = await res.json().catch(() => null);
+    const r = await fetch("/leaderboard", { cache: "no-store" });
+    const data = await r.json();
 
-    if (!res.ok) {
-      const msg = data?.error || "Failed to load leaderboard.";
-      throw new Error(msg);
-    }
+    const players = Array.isArray(data) ? data : (data.players || []);
+    lastUpdatedAt = data.updatedAt || new Date().toISOString();
 
-    const rawPlayers = Array.isArray(data?.players) ? data.players : [];
-    state.players = computeEloRanks(rawPlayers);
-    state.updatedAt = data?.updatedAt || null;
-    state.lastError = null;
+    allPlayers = players.map((p) => ({
+      nickname: p.nickname,
+      avatar: p.avatar,
+      level: p.level,
+      elo: p.elo
+    }));
 
-    els.status.textContent = rawPlayers.length ? "" : "No players found (add players in Admin).";
-    els.status.classList.remove("error");
-    render();
-  } catch (err) {
-    state.lastError = err;
-    els.status.textContent = `Error: ${err.message}`;
-    els.status.classList.add("error");
-    // keep previous render if any
+    render(allPlayers);
+    els.status.textContent = "";
+  } catch (e) {
+    els.status.textContent = "Failed to load leaderboard. Try Refresh.";
   } finally {
-    state.loading = false;
-    if (els.refreshBtn) {
-      els.refreshBtn.disabled = false;
-      els.refreshBtn.textContent = "Refresh";
-    }
+    els.refreshBtn.disabled = false;
+    loading = false;
   }
 }
 
-function wireEvents() {
-  if (els.search) els.search.addEventListener("input", () => { savePrefs({ q: els.search.value }); render(); });
-  if (els.sort) els.sort.addEventListener("change", () => { savePrefs({ sort: els.sort.value }); render(); });
-  if (els.level) els.level.addEventListener("change", () => { savePrefs({ level: els.level.value }); render(); });
+els.search.addEventListener("input", () => render(allPlayers));
+els.refreshBtn.addEventListener("click", load);
 
-  if (els.refreshBtn) {
-    els.refreshBtn.addEventListener("click", () => loadLeaderboard({ silent: false }));
-  }
-
-  // refresh when tab refocuses (nice on TV screens)
-  window.addEventListener("focus", () => loadLeaderboard({ silent: true }));
-}
-
-applyPrefs();
-wireEvents();
-loadLeaderboard({ silent: false });
-
-// Auto-refresh every 30 seconds
-setInterval(() => loadLeaderboard({ silent: true }), 30_000);
+load();
+setInterval(load, 30_000);

@@ -1,219 +1,141 @@
-/* Matrix Admin UI v2 */
-
-let allPlayers = [];
-
+/* Matrix Admin (fresh rebuild) */
 const $ = (id) => document.getElementById(id);
 
-function toast(title, body = "") {
-  const t = $("toast");
-  if (!t) return;
-  $("toastTitle").textContent = title;
-  $("toastBody").textContent = body;
-  t.classList.add("show");
-  clearTimeout(window.__toastTimer);
-  window.__toastTimer = setTimeout(() => t.classList.remove("show"), 3200);
+const els = {
+  loginView: $("loginView"),
+  appView: $("appView"),
+  password: $("password"),
+  loginBtn: $("loginBtn"),
+  loginStatus: $("loginStatus"),
+  logoutBtn: $("logoutBtn"),
+
+  addInput: $("addInput"),
+  addBtn: $("addBtn"),
+  list: $("list"),
+  appStatus: $("appStatus")
+};
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, {
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    ...opts
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(data?.error || "Request failed"), { data, status: r.status });
+  return data;
 }
 
-async function api(url, opts = {}) {
-  const res = await fetch(url, { credentials: "same-origin", ...opts });
-  let data = null;
-  try { data = await res.json(); } catch {}
-  return { res, data };
+function setView(loggedIn) {
+  els.loginView.style.display = loggedIn ? "none" : "";
+  els.appView.style.display = loggedIn ? "" : "none";
+  els.logoutBtn.style.display = loggedIn ? "" : "none";
 }
 
-async function loadHealth() {
-  const pill = $("healthPill");
-  if (!pill) return;
+function rowHtml(p) {
+  const nick = String(p.nickname || "Unknown");
+  const avatar = String(p.avatar || "");
+  const lvl = p.level ?? "—";
+  const elo = p.elo ?? "—";
 
-  const { res, data } = await api("/health");
-  if (!res.ok) {
-    pill.textContent = "Server: error";
-    pill.classList.add("bad");
-    return;
+  return `
+    <div class="item">
+      <div class="pwrap">
+        <img class="avatar" src="${avatar}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"/>
+        <div class="nick" title="${nick}">${nick}</div>
+      </div>
+      <div class="right"><span class="badge badge--lvl">LVL ${lvl}</span></div>
+      <div class="right elo">${elo}</div>
+      <div class="right">
+        <button class="smallbtn smallbtn--danger" data-remove="${p.id}">Remove</button>
+      </div>
+    </div>
+  `;
+}
+
+async function loadList() {
+  els.appStatus.textContent = "Loading…";
+  try {
+    const list = await api("/admin/list");
+    els.list.innerHTML = list.map(rowHtml).join("") || `<div class="empty">No players yet.</div>`;
+    els.appStatus.textContent = "";
+  } catch (e) {
+    els.appStatus.textContent = e.data?.error || "Failed to load.";
   }
-
-  const apiState = data?.hasApiKey ? "API OK" : "API missing";
-  pill.textContent = `DB: ${data?.playerCount ?? "?"} players • ${apiState}`;
-  pill.classList.toggle("bad", !data?.hasApiKey);
-  pill.classList.toggle("good", !!data?.hasApiKey);
-}
-
-async function checkSession() {
-  const { data } = await api("/admin/me");
-  const loggedIn = !!data?.loggedIn;
-
-  $("loginView").style.display = loggedIn ? "none" : "block";
-  $("panelView").style.display = loggedIn ? "block" : "none";
-  $("logoutBtn").style.display = loggedIn ? "inline-flex" : "none";
-
-  if (loggedIn) load();
 }
 
 async function login() {
-  $("loginMsg").textContent = "";
-  const password = $("pass").value;
-
-  const { res, data } = await api("/admin/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password })
-  });
-
-  if (!res.ok) {
-    $("loginMsg").textContent = data?.error || "Login failed";
+  els.loginStatus.textContent = " ";
+  const password = (els.password.value || "").trim();
+  if (!password) {
+    els.loginStatus.textContent = "Enter a password.";
     return;
   }
-
-  $("pass").value = "";
-  toast("Logged in", "Welcome to the admin panel.");
-  await checkSession();
+  els.loginBtn.disabled = true;
+  try {
+    await api("/admin/login", { method: "POST", body: JSON.stringify({ password }) });
+    setView(true);
+    await loadList();
+  } catch (e) {
+    els.loginStatus.textContent = "Login failed.";
+  } finally {
+    els.loginBtn.disabled = false;
+  }
 }
 
 async function logout() {
-  await api("/admin/logout", { method: "POST" });
-  location.reload();
+  try { await api("/admin/logout", { method: "POST", body: "{}" }); } catch {}
+  setView(false);
 }
 
-function setPreview(p) {
-  $("prevAv").src = p?.avatar || "";
-  $("prevName").textContent = p?.nickname || "Not found";
-  $("prevElo").textContent = "ELO: " + (p?.elo ?? "-");
-  $("prevLvl").textContent = "LVL: " + (p?.level ?? "-");
-  $("prevId").textContent = "ID: " + (p?.playerId ?? "-");
-}
-
-async function lookup() {
-  $("addMsg").textContent = "";
-  $("addOk").textContent = "";
-  const nickname = $("nick").value.trim();
-  if (!nickname) {
-    $("addMsg").textContent = "Type a nickname first.";
-    return;
+async function addPlayer() {
+  els.appStatus.textContent = " ";
+  const input = (els.addInput.value || "").trim();
+  if (!input) return;
+  els.addBtn.disabled = true;
+  try {
+    await api("/admin/add", { method: "POST", body: JSON.stringify({ input }) });
+    els.addInput.value = "";
+    await loadList();
+    els.appStatus.textContent = "Added.";
+    setTimeout(() => (els.appStatus.textContent = ""), 1500);
+  } catch (e) {
+    els.appStatus.textContent = e.data?.error || "Failed to add.";
+  } finally {
+    els.addBtn.disabled = false;
   }
+}
 
-  const { res, data } = await api("/admin/lookup?nickname=" + encodeURIComponent(nickname));
-  if (!res.ok) {
-    setPreview(null);
-    $("addMsg").textContent = (data?.error || "Lookup failed");
-    return;
+els.loginBtn.addEventListener("click", login);
+els.password.addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
+
+els.logoutBtn.addEventListener("click", logout);
+
+els.addBtn.addEventListener("click", addPlayer);
+els.addInput.addEventListener("keydown", (e) => { if (e.key === "Enter") addPlayer(); });
+
+els.list.addEventListener("click", async (e) => {
+  const btn = e.target.closest("[data-remove]");
+  if (!btn) return;
+  const id = btn.getAttribute("data-remove");
+  if (!id) return;
+  if (!confirm("Remove this player?")) return;
+  btn.disabled = true;
+  try {
+    await api(`/admin/remove/${encodeURIComponent(id)}`, { method: "DELETE" });
+    await loadList();
+  } catch (err) {
+    els.appStatus.textContent = "Failed to remove.";
   }
-  setPreview(data);
-  toast("Preview loaded", data?.nickname ? `Found ${data.nickname}` : "");
-}
+});
 
-async function add() {
-  $("addMsg").textContent = "";
-  $("addOk").textContent = "";
-
-  const nickname = $("nick").value.trim();
-  if (!nickname) {
-    $("addMsg").textContent = "Type a nickname first.";
-    return;
+// Boot
+(async function init(){
+  try {
+    const me = await api("/admin/me");
+    setView(!!me.loggedIn);
+    if (me.loggedIn) await loadList();
+  } catch {
+    setView(false);
   }
-
-  const { res, data } = await api("/admin/add", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ input: nickname })
-  });
-
-  if (!res.ok) {
-    $("addMsg").textContent = (data?.error || "Add failed");
-    return;
-  }
-
-  $("addOk").textContent = "✅ Added! Player ID: " + data.playerId;
-  toast("Player added", data.playerId);
-  $("nick").value = "";
-  setPreview(null);
-  await load();
-}
-
-async function removePlayer(id) {
-  if (!confirm("Remove this player from leaderboard?")) return;
-  const { res, data } = await api("/admin/remove/" + encodeURIComponent(id), { method: "DELETE" });
-
-  if (!res.ok) {
-    toast("Remove failed", data?.error || "Unknown error");
-    return;
-  }
-  toast("Removed", id);
-  await load();
-}
-
-async function load() {
-  const { res, data } = await api("/admin/list");
-  if (res.status === 401) return location.reload();
-
-  allPlayers = Array.isArray(data) ? data : [];
-  renderFiltered();
-}
-
-function copyText(t) {
-  navigator.clipboard?.writeText(t).then(() => toast("Copied", t)).catch(() => {});
-}
-
-function renderFiltered() {
-  const q = $("filter").value.trim().toLowerCase();
-  const filtered = allPlayers.filter(p =>
-    (p.nickname || "").toLowerCase().includes(q) ||
-    (p.id || "").toLowerCase().includes(q)
-  );
-
-  $("countText").textContent = `${filtered.length} / ${allPlayers.length} players`;
-
-  const list = $("list");
-  list.innerHTML = "";
-
-  filtered.forEach(p => {
-    const div = document.createElement("div");
-    div.className = "player";
-
-    div.innerHTML = `
-      <div class="p-left">
-        <img class="avatar" src="${p.avatar || ""}" alt="" />
-        <div style="min-width:0;">
-          <div class="p-name" title="${p.nickname || ""}">${p.nickname || "(unknown)"}</div>
-          <div class="p-meta">
-            <span class="pill">ELO: ${p.elo ?? "-"}</span>
-            <span class="pill">LVL: ${p.level ?? "-"}</span>
-            <button class="btn ghost small" type="button" data-copy="${p.id}">Copy ID</button>
-          </div>
-        </div>
-      </div>
-      <button class="btn danger" type="button" data-remove="${p.id}">REMOVE</button>
-    `;
-
-    list.appendChild(div);
-  });
-
-  // delegate button events
-  list.querySelectorAll("[data-remove]").forEach(btn => {
-    btn.addEventListener("click", () => removePlayer(btn.getAttribute("data-remove")));
-  });
-  list.querySelectorAll("[data-copy]").forEach(btn => {
-    btn.addEventListener("click", () => copyText(btn.getAttribute("data-copy")));
-  });
-}
-
-function wireAdminEvents() {
-  $("pass")?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") login();
-  });
-
-  $("nick")?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") lookup();
-  });
-
-  $("filter")?.addEventListener("input", renderFiltered);
-
-  $("loginBtn")?.addEventListener("click", login);
-  $("logoutBtn")?.addEventListener("click", logout);
-  $("lookupBtn")?.addEventListener("click", lookup);
-  $("addBtn")?.addEventListener("click", add);
-  $("refreshBtn")?.addEventListener("click", load);
-}
-
-loadHealth();
-wireAdminEvents();
-checkSession();
+})();

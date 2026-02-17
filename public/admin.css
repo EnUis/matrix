@@ -1,169 +1,69 @@
-/* =========================
-   MATRIX Admin v2
-   depends on ui.css
-   ========================= */
+/* Admin (fresh rebuild) */
+.admin{padding: 0}
+.admin__section{padding: 16px}
 
-.admin-header{
-  position: sticky;
-  top: 0;
-  z-index: 60;
-  backdrop-filter: blur(10px);
-  background: rgba(0,0,0,0.52);
-  border-bottom: 1px solid rgba(255,255,255,0.10);
+.h1{
+  margin: 0 0 6px;
+  font-size: 18px;
+  letter-spacing: .02em;
 }
+.muted{margin:0 0 14px; color: var(--muted); font-size: 13px}
 
-.admin-header .inner{
+.formrow{
   display:flex;
+  gap: 10px;
   align-items:center;
-  justify-content:space-between;
-  gap: 12px;
-  padding: 16px 0;
 }
+.formrow .input{flex:1}
 
-.admin-title{
-  font-weight: 900;
-  letter-spacing: 1px;
-  color: var(--accent);
-  text-shadow: 0 0 28px rgba(0,255,153,0.18);
-}
-
-.admin-main{ padding: 28px 0 60px; }
-
-.grid{
+.listHead{
   display:grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 14px;
-}
-@media (max-width: 920px){
-  .grid{ grid-template-columns: 1fr; }
-}
-
-.card-pad{ padding: 16px; }
-
-.section-title{
-  font-weight: 900;
-  font-size: 16px;
-  letter-spacing: 0.7px;
-}
-
-.row{
-  display:flex;
-  gap: 10px;
-  flex-wrap:wrap;
-  align-items:center;
-}
-
-.preview{
-  display:flex;
-  gap: 12px;
-  align-items:center;
-  padding: 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(0,0,0,0.22);
-  margin-top: 12px;
-  min-height: 74px;
-}
-
-.avatar{
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.04);
-  object-fit:cover;
-}
-
-.players{
-  display:flex;
-  flex-direction:column;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.player{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(0,0,0,0.22);
-}
-.p-left{
-  display:flex;
-  align-items:center;
-  gap: 12px;
-  min-width:0;
-}
-.p-name{
-  font-weight: 900;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  max-width: 520px;
-}
-.p-meta{
-  display:flex;
-  gap: 10px;
-  flex-wrap:wrap;
-  margin-top: 4px;
-}
-.p-meta .pill{ padding: 6px 10px; font-size: 11px; }
-
-.msg{
-  white-space:pre-wrap;
-  font-size: 12px;
-  margin-top: 10px;
-}
-.msg.error{ color:#ff9a9a; }
-.msg.ok{ color:#86ffd0; }
-
-/* Login modal */
-.login-wrap{
-  display:flex;
-  justify-content:center;
-  padding-top: 80px;
-}
-
-.login-card{
-  width: min(560px, 94vw);
-  padding: 18px;
-}
-
-.login-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 12px;
-}
-
-.kbd{
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 11px;
+  grid-template-columns: 1fr 110px 120px 84px;
+  padding: 12px 0 10px;
+  margin-top: 14px;
   color: var(--muted);
-  padding: 6px 10px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(0,0,0,0.22);
-  border-radius: 999px;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  border-top: 1px solid var(--border);
 }
 
-/* Toast */
-.toast{
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 999;
-  width: min(380px, 92vw);
-  display:none;
-  padding: 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(10px);
-  box-shadow: var(--shadow2);
+.list{display:block}
+
+.item{
+  display:grid;
+  grid-template-columns: 1fr 110px 120px 84px;
+  padding: 12px 0;
+  align-items:center;
+  border-top: 1px solid rgba(255,255,255,.06);
 }
-.toast.show{ display:block; }
-.toast .t1{ font-weight:900; margin-bottom:4px; }
-.toast .t2{ color: var(--muted); font-size: 12px; line-height: 1.5; }
+.item:first-child{border-top: 1px solid rgba(255,255,255,.06)}
+
+.pwrap{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  min-width: 0;
+}
+.pwrap .avatar{width:32px;height:32px;border-radius: 12px}
+.pwrap .nick{font-weight: 800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+.smallbtn{
+  height: 32px;
+  border-radius: 12px;
+  padding: 0 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  font-weight: 800;
+  cursor:pointer;
+}
+.smallbtn:hover{background: rgba(255,255,255,.06)}
+.smallbtn--danger{border-color: rgba(255,80,80,.25)}
+.smallbtn--danger:hover{background: rgba(255,80,80,.10)}
+
+@media (max-width: 720px){
+  .formrow{flex-direction: column; align-items: stretch}
+  .listHead, .item{grid-template-columns: 1fr 86px 86px 74px}
+}

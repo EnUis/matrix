@@ -1,127 +1,75 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Matrix • Admin</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MATRIX • Admin</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="ui.css" />
-  <link rel="stylesheet" href="admin.css" />
+  <link rel="stylesheet" href="/ui.css" />
+  <link rel="stylesheet" href="/admin.css" />
+  <link rel="icon" href="/logo.png" />
 </head>
 
 <body>
-  <header class="admin-header">
-    <div class="container inner">
-      <div style="display:flex; align-items:center; gap:12px;">
-        <div class="admin-title">MATRIX ADMIN</div>
-        <a class="btn ghost" href="/">Back to Leaderboard</a>
+  <header class="topbar">
+    <div class="brand">
+      <img class="brand__logo" src="/logo.png" alt="Matrix logo" />
+      <div class="brand__text">
+        <div class="brand__title">MATRIX</div>
+        <div class="brand__sub">ADMIN</div>
       </div>
+    </div>
 
-      <div style="display:flex; align-items:center; gap:10px;">
-        <div id="healthPill" class="pill">Checking…</div>
-        <button id="logoutBtn" class="btn danger" style="display:none;" type="button">Logout</button>
-      </div>
+    <div class="topbar__actions">
+      <a class="btn btn--ghost" href="/">Back</a>
+      <button id="logoutBtn" class="btn" type="button" style="display:none">Logout</button>
     </div>
   </header>
 
-  <main class="container admin-main">
-    <!-- LOGIN -->
-    <div id="loginView" class="login-wrap">
-      <div class="card borderGlow login-card">
-        <div class="login-head">
-          <div class="section-title">🔐 Admin Login</div>
-          <div class="kbd">Enter ↵</div>
+  <main class="wrap">
+    <section class="panel admin">
+      <div id="loginView" class="admin__section">
+        <h1 class="h1">Login</h1>
+        <p class="muted">Enter the admin password.</p>
+
+        <div class="formrow">
+          <input id="password" class="input" type="password" placeholder="Admin password" />
+          <button id="loginBtn" class="btn btn--accent" type="button">Login</button>
         </div>
 
-        <div class="hr"></div>
-
-        <div class="row">
-          <input id="pass" class="input" type="password" placeholder="Enter admin password" />
-          <button id="loginBtn" class="btn primary" type="button">Login</button>
-        </div>
-
-        <div id="loginMsg" class="msg error"></div>
-
-        <div class="muted small" style="margin-top:10px; line-height:1.6;">
-          Tip: sessions are stored in MongoDB, so refresh won’t log you out until the session expires.
-        </div>
+        <div id="loginStatus" class="status"> </div>
       </div>
-    </div>
 
-    <!-- PANEL -->
-    <div id="panelView" style="display:none;">
-      <section class="grid">
-        <!-- ADD -->
-        <div class="card borderGlow card-pad">
-          <div class="section-title">➕ Add Player</div>
-          <div class="muted small" style="margin-top:6px; line-height:1.6;">
-            Type FACEIT nickname (or a player ID UUID). We store the permanent FACEIT ID so nickname changes won’t break the list.
-          </div>
-
-          <div class="row" style="margin-top:12px;">
-            <input id="nick" class="input" placeholder="FACEIT nickname or player ID (UUID)" />
-            <button id="lookupBtn" class="btn" type="button">Preview</button>
-            <button id="addBtn" class="btn primary" type="button">Add</button>
-          </div>
-
-          <div id="preview" class="preview">
-            <img id="prevAv" class="avatar" alt="" />
-            <div style="min-width:0;">
-              <div id="prevName" class="p-name">Preview will appear here</div>
-              <div class="p-meta">
-                <span id="prevElo" class="pill">ELO: -</span>
-                <span id="prevLvl" class="pill">LVL: -</span>
-                <span id="prevId" class="pill">ID: -</span>
-              </div>
-            </div>
-          </div>
-
-          <div id="addMsg" class="msg error"></div>
-          <div id="addOk" class="msg ok"></div>
-        </div>
-
-        <!-- TIPS -->
-        <div class="card card-pad">
-          <div class="section-title">📌 Tips</div>
-          <div class="muted small" style="margin-top:10px; line-height:1.8;">
-            • Make sure FACEIT_API_KEY is set in your .env.<br>
-            • Use Preview before adding to verify the player.<br>
-            • Use search in the list to remove quickly.
-          </div>
-
-          <div class="hr"></div>
-
-          <div class="muted small">
-            If login fails, confirm your .env has ADMIN_PASSWORD and restart the server.
-          </div>
-        </div>
-      </section>
-
-      <!-- LIST -->
-      <section class="card card-pad" style="margin-top:14px;">
-        <div class="row" style="justify-content:space-between;">
-          <div class="section-title">📋 Registered Players</div>
-          <div class="row">
-            <input id="filter" class="input" placeholder="Search nickname or ID…" />
-            <button id="refreshBtn" class="btn" type="button">Refresh</button>
+      <div id="appView" class="admin__section" style="display:none">
+        <div class="admin__top">
+          <div>
+            <h1 class="h1">Players</h1>
+            <p class="muted">Add by FACEIT nickname or playerId.</p>
           </div>
         </div>
 
-        <div id="countText" class="muted small" style="margin-top:10px;">Loading…</div>
-        <div id="list" class="players"></div>
-      </section>
-    </div>
+        <div class="formrow">
+          <input id="addInput" class="input" placeholder="Nickname or playerId…" />
+          <button id="addBtn" class="btn btn--accent" type="button">Add</button>
+        </div>
+
+        <div class="listHead">
+          <div>Player</div>
+          <div class="right">Level</div>
+          <div class="right">ELO</div>
+          <div class="right"> </div>
+        </div>
+
+        <div id="list" class="list"></div>
+        <div id="appStatus" class="status"></div>
+      </div>
+    </section>
   </main>
 
-  <div id="toast" class="toast" role="status" aria-live="polite">
-    <div id="toastTitle" class="t1"></div>
-    <div id="toastBody" class="t2"></div>
-  </div>
-
-  <script src="admin.js"></script>
+  <script src="/admin.js"></script>
 </body>
 </html>

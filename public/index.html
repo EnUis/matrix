@@ -1,129 +1,64 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Matrix • FACEIT Leaderboard</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MATRIX • FACEIT CS2 ELO</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="ui.css" />
-  <link rel="stylesheet" href="leaderboard.css" />
+  <link rel="stylesheet" href="/ui.css" />
+  <link rel="stylesheet" href="/leaderboard.css" />
+  <link rel="icon" href="/logo.png" />
 </head>
 
 <body>
-  <header class="site-header" aria-label="Site header">
-    <div class="container header-inner">
-      <div class="brand">
-        <img src="logo.png" alt="Matrix logo" class="logo" />
-        <div style="min-width:0;">
-          <div class="site-title">MATRIX LEADERBOARD</div>
-          <div class="subtitle">FACEIT CS2 ELO • auto-refresh every 30s</div>
-        </div>
+  <header class="topbar">
+    <div class="brand">
+      <img class="brand__logo" src="/logo.png" alt="Matrix logo" />
+      <div class="brand__text">
+        <div class="brand__title">MATRIX</div>
+        <div class="brand__sub">FACEIT CS2 ELO</div>
       </div>
+    </div>
 
-      <div class="header-actions">
-        <button id="refreshBtn" class="btn primary" type="button">Refresh</button>
-        <a class="btn ghost" href="/admin">Admin</a>
-      </div>
+    <div class="topbar__actions">
+      <button id="refreshBtn" class="btn btn--accent" type="button">Refresh</button>
+      <a class="btn btn--ghost" href="/admin.html">Admin</a>
     </div>
   </header>
 
-  <main class="container main">
-    <section class="hero">
-      <div class="card borderGlow hero-left">
-        <h1 class="hero-title" style="margin:0;">Ranked by FACEIT CS2 ELO</h1>
-        <p class="hero-sub">
-          Players are stored in your database. The leaderboard refreshes from FACEIT and keeps the list stable even if nicknames change.
-        </p>
-
-        <div class="hr"></div>
-
-        <div class="statusline">
-          <div>
-            <div id="status" class="status">Loading…</div>
-            <div id="updatedAt" class="status"></div>
-          </div>
-          <div id="countPill" class="pill good">0 players</div>
+  <main class="wrap">
+    <section class="panel">
+      <div class="panel__row">
+        <input id="search" class="input" type="search" placeholder="Search player…" autocomplete="off" />
+        <div class="meta">
+          <span id="count" class="pill">0 players</span>
+          <span id="updated" class="pill pill--soft">Updated —</span>
         </div>
       </div>
 
-      <div class="stats">
-        <div class="card stat">
-          <div class="k">Search</div>
-          <div class="v">Find anyone</div>
-          <div class="muted small">Nickname or player ID</div>
+      <div class="table">
+        <div class="table__head">
+          <div>#</div>
+          <div>Player</div>
+          <div class="right">Level</div>
+          <div class="right">ELO</div>
         </div>
-        <div class="card stat">
-          <div class="k">Sort</div>
-          <div class="v">Any way</div>
-          <div class="muted small">ELO, level, name</div>
-        </div>
-        <div class="card stat">
-          <div class="k">Admin</div>
-          <div class="v">Manage list</div>
-          <div class="muted small">Add / remove players</div>
-        </div>
-        <div class="card stat">
-          <div class="k">Auto</div>
-          <div class="v">Refresh</div>
-          <div class="muted small">Every 30 seconds</div>
-        </div>
+
+        <div id="rows" class="table__body" aria-live="polite"></div>
       </div>
+
+      <div id="status" class="status">Loading…</div>
     </section>
 
-    <section class="controls" aria-label="Leaderboard controls">
-      <input id="search" class="input" type="search" placeholder="Search nickname or player ID…" autocomplete="off" />
-      <select id="sort" class="select" aria-label="Sort">
-        <option value="elo_desc">Sort: ELO (high → low)</option>
-        <option value="elo_asc">Sort: ELO (low → high)</option>
-        <option value="name_asc">Sort: Name (A → Z)</option>
-        <option value="name_desc">Sort: Name (Z → A)</option>
-        <option value="level_desc">Sort: Level (high → low)</option>
-        <option value="level_asc">Sort: Level (low → high)</option>
-      </select>
-      <select id="level" class="select" aria-label="Level filter">
-        <option value="all">Level: All</option>
-        <option value="10">Level: 10</option>
-        <option value="9">Level: 9</option>
-        <option value="8">Level: 8</option>
-        <option value="7">Level: 7</option>
-        <option value="6">Level: 6</option>
-        <option value="5">Level: 5</option>
-        <option value="4">Level: 4</option>
-        <option value="3">Level: 3</option>
-        <option value="2">Level: 2</option>
-        <option value="1">Level: 1</option>
-      </select>
-    </section>
-
-    
-    <!-- podium removed for a cleaner UI -->
-
-
-    <section class="card table-card" aria-label="Leaderboard table">
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th class="col-rank">#</th>
-              <th>Player</th>
-              <th class="col-level right">Level</th>
-              <th class="col-elo right">ELO</th>
-            </tr>
-          </thead>
-          <tbody id="board"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <footer class="footer">
-      <span class="muted">Tip: open Admin to add/remove players. Use the search box for quick filtering.</span>
+    <footer class="foot">
+      Auto refresh every 30s • Built for FACEIT CS2
     </footer>
   </main>
 
-  <script src="app.js"></script>
+  <script src="/app.js"></script>
 </body>
 </html>
