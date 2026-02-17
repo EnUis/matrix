@@ -1,77 +1,56 @@
 /* =========================
-   MATRIX Admin — CS2 Simple
+   MATRIX Admin v2
+   depends on ui.css
    ========================= */
 
-.admin-topbar{
+.admin-header{
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 60;
   backdrop-filter: blur(10px);
-  background: rgba(10,12,14,0.78);
-  border-bottom: 1px solid var(--stroke2);
+  background: rgba(0,0,0,0.52);
+  border-bottom: 1px solid rgba(255,255,255,0.10);
 }
-.admin-topbar .inner{
+
+.admin-header .inner{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap: 12px;
-  padding: 14px 0;
+  padding: 16px 0;
 }
-.admin-brand{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  min-width:0;
-}
+
 .admin-title{
-  font-family: var(--fontDisplay);
-  font-weight: 800;
-  letter-spacing: 1.1px;
-}
-.admin-main{ padding: 18px 0 56px; }
-
-.panel{
-  padding: 14px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--accent);
+  text-shadow: 0 0 28px rgba(0,255,153,0.18);
 }
 
-.split{
+.admin-main{ padding: 28px 0 60px; }
+
+.grid{
   display:grid;
-  grid-template-columns: 380px 1fr;
+  grid-template-columns: 1.2fr 0.8fr;
   gap: 14px;
-  align-items:start;
+}
+@media (max-width: 920px){
+  .grid{ grid-template-columns: 1fr; }
 }
 
-@media (max-width: 900px){
-  .split{ grid-template-columns: 1fr; }
+.card-pad{ padding: 16px; }
+
+.section-title{
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: 0.7px;
 }
 
-/* Login */
-.login-wrap{
-  max-width: 460px;
-  margin: 34px auto 0;
-}
-.login-card{ padding: 16px; }
-.login-row{
+.row{
   display:flex;
   gap: 10px;
+  flex-wrap:wrap;
   align-items:center;
-}
-.login-row .input{ flex:1; }
-.msg{ margin-top: 10px; color: var(--muted); font-size: 13px; }
-.msg.error{ color: rgba(255,59,59,0.95); }
-.msg.ok{ color: rgba(62,227,123,0.95); }
-
-/* Dashboard */
-.section-title{
-  font-family: var(--fontDisplay);
-  font-weight: 800;
-  letter-spacing: 0.8px;
-  margin: 0 0 8px;
-}
-.sub{
-  color: var(--muted);
-  font-size: 13px;
-  margin-bottom: 10px;
 }
 
 .preview{
@@ -79,66 +58,37 @@
   gap: 12px;
   align-items:center;
   padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--stroke2);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.10);
   background: rgba(0,0,0,0.22);
+  margin-top: 12px;
+  min-height: 74px;
 }
-.preview img{
-  width: 56px; height: 56px;
-  border-radius: 14px;
+
+.avatar{
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.12);
-  object-fit: cover;
-  background: rgba(255,255,255,0.06);
-}
-.preview .meta{
-  min-width:0;
-}
-.preview .name{
-  font-family: var(--fontDisplay);
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-  overflow:hidden;
-  text-overflow: ellipsis;
-}
-.preview .line{
-  color: var(--muted);
-  font-size: 12.5px;
+  background: rgba(255,255,255,0.04);
+  object-fit:cover;
 }
 
-.tools{
+.players{
   display:flex;
+  flex-direction:column;
   gap: 10px;
-  flex-wrap: wrap;
+  margin-top: 12px;
 }
-.tools .input{ min-width: 220px; flex: 1 1 260px; }
-.tools .btn{ white-space: nowrap; }
 
-/* Player list */
-.listHead{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.listHead .input{
-  max-width: 360px;
-}
-.list{
-  margin-top: 10px;
-  display:flex;
-  flex-direction: column;
-  gap: 10px;
-}
 .player{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap: 10px;
+  gap: 12px;
   padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--stroke2);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.10);
   background: rgba(0,0,0,0.22);
 }
 .p-left{
@@ -147,27 +97,56 @@
   gap: 12px;
   min-width:0;
 }
-.player .avatar{
-  width: 44px; height: 44px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.10);
-  object-fit: cover;
-  background: rgba(255,255,255,0.06);
-}
 .p-name{
-  font-family: var(--fontDisplay);
-  font-weight: 800;
-  letter-spacing: 0.4px;
-  white-space: nowrap;
+  font-weight: 900;
+  white-space:nowrap;
   overflow:hidden;
-  text-overflow: ellipsis;
+  text-overflow:ellipsis;
+  max-width: 520px;
 }
 .p-meta{
   display:flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 10px;
+  flex-wrap:wrap;
   margin-top: 4px;
+}
+.p-meta .pill{ padding: 6px 10px; font-size: 11px; }
+
+.msg{
+  white-space:pre-wrap;
+  font-size: 12px;
+  margin-top: 10px;
+}
+.msg.error{ color:#ff9a9a; }
+.msg.ok{ color:#86ffd0; }
+
+/* Login modal */
+.login-wrap{
+  display:flex;
+  justify-content:center;
+  padding-top: 80px;
+}
+
+.login-card{
+  width: min(560px, 94vw);
+  padding: 18px;
+}
+
+.login-head{
+  display:flex;
   align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+}
+
+.kbd{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+  color: var(--muted);
+  padding: 6px 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.22);
+  border-radius: 999px;
 }
 
 /* Toast */
@@ -175,28 +154,16 @@
   position: fixed;
   right: 18px;
   bottom: 18px;
-  width: min(360px, calc(100% - 36px));
-  border-radius: 14px;
-  border: 1px solid var(--stroke);
-  background: rgba(10,12,14,0.88);
-  box-shadow: var(--shadow);
-  padding: 12px 12px 12px 12px;
-  transform: translateY(18px);
-  opacity: 0;
-  pointer-events:none;
-  transition: opacity .18s ease, transform .18s ease;
+  z-index: 999;
+  width: min(380px, 92vw);
+  display:none;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow2);
 }
-.toast.show{
-  opacity: 1;
-  transform: translateY(0);
-}
-.toast .t-title{
-  font-family: var(--fontDisplay);
-  font-weight: 800;
-  letter-spacing: 0.6px;
-}
-.toast .t-body{
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 13px;
-}
+.toast.show{ display:block; }
+.toast .t1{ font-weight:900; margin-bottom:4px; }
+.toast .t2{ color: var(--muted); font-size: 12px; line-height: 1.5; }

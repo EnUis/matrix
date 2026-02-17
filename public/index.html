@@ -3,28 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Matrix • CS2 Leaderboard</title>
+  <title>Matrix • FACEIT Leaderboard</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="ui.css" />
   <link rel="stylesheet" href="leaderboard.css" />
 </head>
 
 <body>
-  <header class="topbar" aria-label="Site header">
-    <div class="container topbar-inner">
+  <header class="site-header" aria-label="Site header">
+    <div class="container header-inner">
       <div class="brand">
         <img src="logo.png" alt="Matrix logo" class="logo" />
-        <div class="titleWrap">
-          <div class="site-title">MATRIX</div>
-          <div class="subtitle">FACEIT CS2 ELO • auto refresh 30s</div>
+        <div style="min-width:0;">
+          <div class="site-title">MATRIX LEADERBOARD</div>
+          <div class="subtitle">FACEIT CS2 ELO • auto-refresh every 30s</div>
         </div>
       </div>
 
-      <div class="row" style="gap:10px;">
+      <div class="header-actions">
         <button id="refreshBtn" class="btn primary" type="button">Refresh</button>
         <a class="btn ghost" href="/admin">Admin</a>
       </div>
@@ -32,71 +32,96 @@
   </header>
 
   <main class="container main">
-    <section class="card controls" aria-label="Controls">
-      <div class="left">
-        <div class="control">
-          <input id="search" class="input" type="search" autocomplete="off"
-                 placeholder="Search nickname or player ID…" />
-        </div>
+    <section class="hero">
+      <div class="card borderGlow hero-left">
+        <h1 class="hero-title" style="margin:0;">Ranked by FACEIT CS2 ELO</h1>
+        <p class="hero-sub">
+          Players are stored in your database. The leaderboard refreshes from FACEIT and keeps the list stable even if nicknames change.
+        </p>
 
-        <div class="control" style="max-width:260px;">
-          <select id="sort" class="select" aria-label="Sort">
-            <option value="elo_desc">Sort: ELO (high → low)</option>
-            <option value="elo_asc">Sort: ELO (low → high)</option>
-            <option value="name_asc">Sort: Name (A → Z)</option>
-            <option value="name_desc">Sort: Name (Z → A)</option>
-            <option value="level_desc">Sort: Level (high → low)</option>
-            <option value="level_asc">Sort: Level (low → high)</option>
-          </select>
-        </div>
+        <div class="hr"></div>
 
-        <div class="control" style="max-width:200px;">
-          <select id="level" class="select" aria-label="Level filter">
-            <option value="all">Level: All</option>
-            <option value="10">Level: 10</option>
-            <option value="9">Level: 9</option>
-            <option value="8">Level: 8</option>
-            <option value="7">Level: 7</option>
-            <option value="6">Level: 6</option>
-            <option value="5">Level: 5</option>
-            <option value="4">Level: 4</option>
-            <option value="3">Level: 3</option>
-            <option value="2">Level: 2</option>
-            <option value="1">Level: 1</option>
-          </select>
+        <div class="statusline">
+          <div>
+            <div id="status" class="status">Loading…</div>
+            <div id="updatedAt" class="status"></div>
+          </div>
+          <div id="countPill" class="pill good">0 players</div>
         </div>
       </div>
 
-      <div class="right">
-        <span id="countPill" class="pill good">—</span>
-        <span id="updatedAt" class="pill">Updated: —</span>
+      <div class="stats">
+        <div class="card stat">
+          <div class="k">Search</div>
+          <div class="v">Find anyone</div>
+          <div class="muted small">Nickname or player ID</div>
+        </div>
+        <div class="card stat">
+          <div class="k">Sort</div>
+          <div class="v">Any way</div>
+          <div class="muted small">ELO, level, name</div>
+        </div>
+        <div class="card stat">
+          <div class="k">Admin</div>
+          <div class="v">Manage list</div>
+          <div class="muted small">Add / remove players</div>
+        </div>
+        <div class="card stat">
+          <div class="k">Auto</div>
+          <div class="v">Refresh</div>
+          <div class="muted small">Every 30 seconds</div>
+        </div>
       </div>
     </section>
 
-    <div id="status" class="status" role="status"></div>
-
-    <!-- kept for JS compatibility, but hidden via CSS -->
-    <div id="podiumWrap" aria-hidden="true">
-      <div id="podium"></div>
-    </div>
-
-    <section class="card tableWrap" aria-label="Leaderboard">
-      <table class="table">
-        <thead>
-          <tr>
-            <th class="col-rank">#</th>
-            <th>Player</th>
-            <th class="right">Level</th>
-            <th class="right">ELO</th>
-          </tr>
-        </thead>
-        <tbody id="board"></tbody>
-      </table>
+    <section class="controls" aria-label="Leaderboard controls">
+      <input id="search" class="input" type="search" placeholder="Search nickname or player ID…" autocomplete="off" />
+      <select id="sort" class="select" aria-label="Sort">
+        <option value="elo_desc">Sort: ELO (high → low)</option>
+        <option value="elo_asc">Sort: ELO (low → high)</option>
+        <option value="name_asc">Sort: Name (A → Z)</option>
+        <option value="name_desc">Sort: Name (Z → A)</option>
+        <option value="level_desc">Sort: Level (high → low)</option>
+        <option value="level_asc">Sort: Level (low → high)</option>
+      </select>
+      <select id="level" class="select" aria-label="Level filter">
+        <option value="all">Level: All</option>
+        <option value="10">Level: 10</option>
+        <option value="9">Level: 9</option>
+        <option value="8">Level: 8</option>
+        <option value="7">Level: 7</option>
+        <option value="6">Level: 6</option>
+        <option value="5">Level: 5</option>
+        <option value="4">Level: 4</option>
+        <option value="3">Level: 3</option>
+        <option value="2">Level: 2</option>
+        <option value="1">Level: 1</option>
+      </select>
     </section>
 
-    <div class="muted" style="margin-top:12px; font-size:12.5px;">
-      Tip: Add players in Admin. The list is stored in MongoDB; ELO updates from FACEIT.
-    </div>
+    
+    <!-- podium removed for a cleaner UI -->
+
+
+    <section class="card table-card" aria-label="Leaderboard table">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-rank">#</th>
+              <th>Player</th>
+              <th class="col-level right">Level</th>
+              <th class="col-elo right">ELO</th>
+            </tr>
+          </thead>
+          <tbody id="board"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span class="muted">Tip: open Admin to add/remove players. Use the search box for quick filtering.</span>
+    </footer>
   </main>
 
   <script src="app.js"></script>

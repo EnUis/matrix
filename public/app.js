@@ -144,7 +144,6 @@ function tableRow(player) {
         <img src="${safeText(player.avatar)}" alt="" loading="lazy" />
         <div class="pwrap">
           <div class="pname" title="${safeText(player.nickname)}">${safeText(player.nickname)}</div>
-          <div class="muted small mono" title="${safeText(player.id)}">${safeText(player.id)}</div>
         </div>
       </div>
     </td>
@@ -153,6 +152,7 @@ function tableRow(player) {
   `;
 
   return tr;
+}
 }
 
 function renderSkeleton(rows = 10) {
@@ -191,17 +191,13 @@ function render() {
   els.updatedAt.textContent = formatUpdatedAt(state.updatedAt);
 
   // podium only when "normal view"
-  const showPodium = !q && lvl === "all" && sortMode === "elo_desc" && out.length >= 3;
-  els.podiumWrap.style.display = showPodium ? "block" : "none";
+  // Simplified UI: always show full table (including #1, #2, #3) and hide podium
+const showPodium = false;
+if (els.podiumWrap) els.podiumWrap.style.display = "none";
+// (Podium rendering disabled intentionally for a cleaner look)
 
-  if (showPodium) {
-    els.podium.innerHTML = "";
-    const top3 = out.slice(0, 3);
-    top3.forEach((p) => els.podium.appendChild(podiumCard(p)));
-  }
-
-  // table
-  const list = showPodium ? out.slice(3) : out;
+// table
+const list = out;
 
   els.board.innerHTML = "";
   const frag = document.createDocumentFragment();

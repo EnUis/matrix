@@ -7,22 +7,22 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="ui.css" />
   <link rel="stylesheet" href="admin.css" />
 </head>
 
 <body>
-  <header class="admin-topbar">
+  <header class="admin-header">
     <div class="container inner">
-      <div class="admin-brand">
+      <div style="display:flex; align-items:center; gap:12px;">
         <div class="admin-title">MATRIX ADMIN</div>
-        <a class="btn ghost" href="/">Leaderboard</a>
+        <a class="btn ghost" href="/">Back to Leaderboard</a>
       </div>
 
-      <div class="row" style="gap:10px; align-items:center;">
-        <span id="healthPill" class="pill">Checking…</span>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div id="healthPill" class="pill">Checking…</div>
         <button id="logoutBtn" class="btn danger" style="display:none;" type="button">Logout</button>
       </div>
     </div>
@@ -30,77 +30,96 @@
 
   <main class="container admin-main">
     <!-- LOGIN -->
-    <section id="loginView" class="login-wrap">
-      <div class="card login-card">
-        <div class="section-title">Login</div>
-        <div class="sub">Enter the admin password to manage players.</div>
+    <div id="loginView" class="login-wrap">
+      <div class="card borderGlow login-card">
+        <div class="login-head">
+          <div class="section-title">🔐 Admin Login</div>
+          <div class="kbd">Enter ↵</div>
+        </div>
 
-        <div class="login-row">
-          <input id="pass" class="input" type="password" placeholder="Admin password" />
+        <div class="hr"></div>
+
+        <div class="row">
+          <input id="pass" class="input" type="password" placeholder="Enter admin password" />
           <button id="loginBtn" class="btn primary" type="button">Login</button>
         </div>
+
         <div id="loginMsg" class="msg error"></div>
+
+        <div class="muted small" style="margin-top:10px; line-height:1.6;">
+          Tip: sessions are stored in MongoDB, so refresh won’t log you out until the session expires.
+        </div>
       </div>
-    </section>
+    </div>
 
     <!-- PANEL -->
-    <section id="panelView" style="display:none;">
-      <div class="split">
-        <!-- left: add -->
-        <div class="card panel">
-          <div class="section-title">Add player</div>
-          <div class="sub">Paste FACEIT nickname or playerId.</div>
+    <div id="panelView" style="display:none;">
+      <section class="grid">
+        <!-- ADD -->
+        <div class="card borderGlow card-pad">
+          <div class="section-title">➕ Add Player</div>
+          <div class="muted small" style="margin-top:6px; line-height:1.6;">
+            Type FACEIT nickname (or a player ID UUID). We store the permanent FACEIT ID so nickname changes won’t break the list.
+          </div>
 
-          <div class="tools">
-            <input id="nick" class="input" type="text" placeholder="nickname or playerId…" />
-            <button id="lookupBtn" class="btn ghost" type="button">Preview</button>
+          <div class="row" style="margin-top:12px;">
+            <input id="nick" class="input" placeholder="FACEIT nickname or player ID (UUID)" />
+            <button id="lookupBtn" class="btn" type="button">Preview</button>
             <button id="addBtn" class="btn primary" type="button">Add</button>
+          </div>
+
+          <div id="preview" class="preview">
+            <img id="prevAv" class="avatar" alt="" />
+            <div style="min-width:0;">
+              <div id="prevName" class="p-name">Preview will appear here</div>
+              <div class="p-meta">
+                <span id="prevElo" class="pill">ELO: -</span>
+                <span id="prevLvl" class="pill">LVL: -</span>
+                <span id="prevId" class="pill">ID: -</span>
+              </div>
+            </div>
           </div>
 
           <div id="addMsg" class="msg error"></div>
           <div id="addOk" class="msg ok"></div>
+        </div>
+
+        <!-- TIPS -->
+        <div class="card card-pad">
+          <div class="section-title">📌 Tips</div>
+          <div class="muted small" style="margin-top:10px; line-height:1.8;">
+            • Make sure FACEIT_API_KEY is set in your .env.<br>
+            • Use Preview before adding to verify the player.<br>
+            • Use search in the list to remove quickly.
+          </div>
 
           <div class="hr"></div>
 
-          <div id="preview" class="preview">
-            <img id="prevAv" src="" alt="" />
-            <div class="meta">
-              <div id="prevName" class="name">Not found</div>
-              <div id="prevElo" class="line">ELO: -</div>
-              <div id="prevLvl" class="line">LVL: -</div>
-              <div id="prevId" class="line">ID: -</div>
-            </div>
+          <div class="muted small">
+            If login fails, confirm your .env has ADMIN_PASSWORD and restart the server.
           </div>
+        </div>
+      </section>
 
-          <div class="muted" style="margin-top:10px; font-size:12.5px;">
-            Tip: Use Preview to verify the right player before adding.
+      <!-- LIST -->
+      <section class="card card-pad" style="margin-top:14px;">
+        <div class="row" style="justify-content:space-between;">
+          <div class="section-title">📋 Registered Players</div>
+          <div class="row">
+            <input id="filter" class="input" placeholder="Search nickname or ID…" />
+            <button id="refreshBtn" class="btn" type="button">Refresh</button>
           </div>
         </div>
 
-        <!-- right: list -->
-        <div class="card panel">
-          <div class="listHead">
-            <div>
-              <div class="section-title" style="margin-bottom:2px;">Players</div>
-              <div id="countText" class="sub" style="margin:0;">—</div>
-            </div>
-
-            <div class="row" style="gap:10px;">
-              <input id="filter" class="input" type="search" placeholder="Filter…" />
-              <button id="refreshBtn" class="btn ghost" type="button">Reload</button>
-            </div>
-          </div>
-
-          <div id="list" class="list"></div>
-        </div>
-      </div>
-    </section>
+        <div id="countText" class="muted small" style="margin-top:10px;">Loading…</div>
+        <div id="list" class="players"></div>
+      </section>
+    </div>
   </main>
 
-  <!-- Toast -->
   <div id="toast" class="toast" role="status" aria-live="polite">
-    <div id="toastTitle" class="t-title">—</div>
-    <div id="toastBody" class="t-body"></div>
+    <div id="toastTitle" class="t1"></div>
+    <div id="toastBody" class="t2"></div>
   </div>
 
   <script src="admin.js"></script>
