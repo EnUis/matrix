@@ -102,3 +102,51 @@
   }
   .table__head{font-size:11px}
 }
+
+
+/* Top 3 strip */
+.top3{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,.10);
+}
+
+.top3card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.03);
+}
+
+.top3left{display:flex; align-items:center; gap: 10px; min-width:0}
+.top3rank{font-weight: 900; letter-spacing:.02em; opacity:.95}
+.top3avatar{
+  width: 36px; height: 36px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  flex: 0 0 auto;
+}
+.top3meta{min-width:0}
+.top3name{font-weight: 900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.top3sub{margin-top:2px; font-size:12px; color: var(--muted)}
+.top3elo{text-align:right; flex: 0 0 auto}
+.top3elo .num{font-weight: 900; font-size: 20px; line-height: 1}
+.top3elo .lab{margin-top:4px; font-size: 11px; color: var(--muted)}
+
+.top3card[data-rank="1"]{box-shadow: inset 0 2px 0 rgba(255,106,0,.90)}
+.top3card[data-rank="2"]{box-shadow: inset 0 2px 0 rgba(255,106,0,.55)}
+.top3card[data-rank="3"]{box-shadow: inset 0 2px 0 rgba(255,106,0,.35)}
+
+@media (max-width: 860px){
+  .top3{grid-template-columns: 1fr;}
+}
