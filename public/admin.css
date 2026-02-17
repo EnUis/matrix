@@ -1,0 +1,69 @@
+/* Admin (fresh rebuild) */
+.admin{padding: 0}
+.admin__section{padding: 16px}
+
+.h1{
+  margin: 0 0 6px;
+  font-size: 18px;
+  letter-spacing: .02em;
+}
+.muted{margin:0 0 14px; color: var(--muted); font-size: 13px}
+
+.formrow{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+}
+.formrow .input{flex:1}
+
+.listHead{
+  display:grid;
+  grid-template-columns: 1fr 110px 120px 84px;
+  padding: 12px 0 10px;
+  margin-top: 14px;
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  border-top: 1px solid var(--border);
+}
+
+.list{display:block}
+
+.item{
+  display:grid;
+  grid-template-columns: 1fr 110px 120px 84px;
+  padding: 12px 0;
+  align-items:center;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+.item:first-child{border-top: 1px solid rgba(255,255,255,.06)}
+
+.pwrap{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  min-width: 0;
+}
+.pwrap .avatar{width:32px;height:32px;border-radius: 12px}
+.pwrap .nick{font-weight: 800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+.smallbtn{
+  height: 32px;
+  border-radius: 12px;
+  padding: 0 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  font-weight: 800;
+  cursor:pointer;
+}
+.smallbtn:hover{background: rgba(255,255,255,.06)}
+.smallbtn--danger{border-color: rgba(255,80,80,.25)}
+.smallbtn--danger:hover{background: rgba(255,80,80,.10)}
+
+@media (max-width: 720px){
+  .formrow{flex-direction: column; align-items: stretch}
+  .listHead, .item{grid-template-columns: 1fr 86px 86px 74px}
+}
