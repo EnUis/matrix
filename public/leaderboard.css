@@ -1,0 +1,181 @@
+/* =========================
+   MATRIX Leaderboard — CS2 Simple
+   ========================= */
+
+.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  backdrop-filter: blur(10px);
+  background: rgba(10,12,14,0.78);
+  border-bottom: 1px solid var(--stroke2);
+}
+.topbar-inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  padding: 14px 0;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  min-width: 0;
+}
+.logo{
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--stroke);
+  object-fit: cover;
+}
+.titleWrap{ min-width:0; }
+.site-title{
+  font-family: var(--fontDisplay);
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  line-height: 1.05;
+}
+.subtitle{
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.main{
+  padding: 18px 0 48px;
+}
+
+.controls{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px;
+}
+.controls .left{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items:center;
+  flex: 1 1 560px;
+}
+.controls .right{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items:center;
+}
+
+.control{
+  min-width: 190px;
+  flex: 1 1 220px;
+}
+
+.status{
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.status.error{ color: rgba(255,59,59,0.95); }
+
+.tableWrap{
+  margin-top: 12px;
+  overflow:hidden;
+}
+.table{
+  width:100%;
+  border-collapse: collapse;
+}
+.table thead th{
+  text-align:left;
+  font-size: 12.5px;
+  letter-spacing: 0.6px;
+  color: rgba(255,255,255,0.72);
+  padding: 12px 14px;
+  background: rgba(0,0,0,0.25);
+  border-bottom: 1px solid var(--stroke2);
+}
+.table tbody td{
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  vertical-align: middle;
+}
+.table tbody tr:hover{
+  background: rgba(255,255,255,0.04);
+}
+.col-rank{ width: 68px; color: rgba(255,255,255,0.75); }
+.elo{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  color: rgba(255,255,255,0.90);
+}
+.playerCell{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  min-width: 0;
+}
+.playerCell img{
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  object-fit: cover;
+  background: rgba(255,255,255,0.06);
+}
+.pname{
+  font-family: var(--fontDisplay);
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+}
+.pid{
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  max-width: 520px;
+}
+.empty{
+  padding: 18px 14px !important;
+  color: var(--muted);
+  text-align:center;
+}
+
+/* Skeleton loading */
+.skel{
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  position: relative;
+  overflow:hidden;
+}
+.skel:after{
+  content:"";
+  position:absolute;
+  inset:-80px 0;
+  transform: translateX(-60%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent);
+  animation: shimmer 1.2s infinite;
+}
+@keyframes shimmer{
+  0%{ transform: translateX(-60%); }
+  100%{ transform: translateX(60%); }
+}
+
+/* Hide podium section for simpler vibe (JS may toggle it) */
+#podiumWrap{ display:none !important; }
+
+@media (max-width: 640px){
+  .control{ min-width: 100%; }
+  .pid{ max-width: 220px; }
+}
+
+.pwrap{ min-width:0; }
+
+.playerCell .muted{ display:block; }
